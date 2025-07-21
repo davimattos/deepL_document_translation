@@ -87,6 +87,7 @@ function App() {
       const uploadResponse = await fetch('https://api.deepl.com/v2/document', {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': `DeepL-Auth-Key ${apiKey}`,
         },
         body: uploadFormData,
