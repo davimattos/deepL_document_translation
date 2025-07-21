@@ -127,7 +127,7 @@ function App() {
         statusFormData.append('document_key', uploadResult.document_key);
 
         const statusResponse = await fetch(
-          `https://api.deepl.com/v2/document/${uploadResult.document_id}`,
+          `https://api-free.deepl.com/v2/document/${uploadResult.document_id}`,
           {
             method: 'POST',
             headers: {
@@ -194,7 +194,7 @@ function App() {
       console.log('Document Key:', deepLResponse.document_key.substring(0, 10) + '...');
 
       const downloadResponse = await fetch(
-        `https://api.deepl.com/v2/document/${deepLResponse.document_id}/result`,
+        `https://api-free.deepl.com/v2/document/${deepLResponse.document_id}/result`,
         {
           method: 'POST',
           headers: {
