@@ -408,7 +408,7 @@ function App() {
                         <table className="w-full text-xs">
                           <thead>
                             <tr className="border-b border-gray-200">
-                              <th className="text-left py-2 font-medium text-gray-700">Formato</th>
+                              <th className="text-center py-2 font-medium text-gray-700">Formato</th>
                               <th className="text-center py-2 font-medium text-gray-700">API Pro</th>
                             </tr>
                           </thead>
