@@ -84,7 +84,7 @@ function App() {
       console.log('Target Language:', targetLanguage);
       console.log('File:', file.name);
 
-      const uploadResponse = await fetch('https://api.deepl.com/v2/document', {
+      const uploadResponse = await fetch('https://api-free.deepl.com/v2/document', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
