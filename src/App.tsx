@@ -313,10 +313,6 @@ function App() {
                     >
                       deepl.com/pro-api
                     </a>
-                    <br />
-                    <span className="text-orange-600 font-medium">
-                      API Free: 500k caracteres/mês | API Pro: sem limite
-                    </span>
                   </p>
                 </div>
 
