@@ -313,6 +313,10 @@ function App() {
                     >
                       deepl.com/pro-api
                     </a>
+                    <br />
+                    <span className="text-orange-600 font-medium">
+                      API Free: 500k caracteres/mês | API Pro: sem limite
+                    </span>
                   </p>
                 </div>
 
@@ -398,6 +402,67 @@ function App() {
                       <p className="mb-2">Extensões suportadas:</p>
                       <p className="font-mono text-xs">
                         {allowedExtensions.join(', ')}
+                      </p>
+                    </div>
+                    
+                    {/* File Format Limits Table */}
+                    <div className="mt-6 bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-900 mb-3">Limites por Formato de Arquivo</h4>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b border-gray-200">
+                              <th className="text-left py-2 font-medium text-gray-700">Formato</th>
+                              <th className="text-center py-2 font-medium text-gray-700">API Free</th>
+                              <th className="text-center py-2 font-medium text-gray-700">API Pro</th>
+                            </tr>
+                          </thead>
+                          <tbody className="text-gray-600">
+                            <tr className="border-b border-gray-100">
+                              <td className="py-2 font-mono">.docx / .doc</td>
+                              <td className="text-center py-2">10 MB<br/>500k chars</td>
+                              <td className="text-center py-2">30 MB<br/>1M chars</td>
+                            </tr>
+                            <tr className="border-b border-gray-100">
+                              <td className="py-2 font-mono">.pptx</td>
+                              <td className="text-center py-2">10 MB<br/>500k chars</td>
+                              <td className="text-center py-2">30 MB<br/>1M chars</td>
+                            </tr>
+                            <tr className="border-b border-gray-100">
+                              <td className="py-2 font-mono">.xlsx</td>
+                              <td className="text-center py-2">10 MB<br/>500k chars</td>
+                              <td className="text-center py-2">30 MB<br/>1M chars</td>
+                            </tr>
+                            <tr className="border-b border-gray-100">
+                              <td className="py-2 font-mono">.pdf</td>
+                              <td className="text-center py-2">10 MB<br/>500k chars</td>
+                              <td className="text-center py-2">30 MB<br/>1M chars</td>
+                            </tr>
+                            <tr className="border-b border-gray-100">
+                              <td className="py-2 font-mono">.txt</td>
+                              <td className="text-center py-2">1 MB<br/>500k chars</td>
+                              <td className="text-center py-2">1 MB<br/>1M chars</td>
+                            </tr>
+                            <tr className="border-b border-gray-100">
+                              <td className="py-2 font-mono">.html</td>
+                              <td className="text-center py-2">5 MB<br/>500k chars</td>
+                              <td className="text-center py-2">5 MB<br/>1M chars</td>
+                            </tr>
+                            <tr className="border-b border-gray-100">
+                              <td className="py-2 font-mono">.xlf / .xliff</td>
+                              <td className="text-center py-2">10 MB<br/>500k chars</td>
+                              <td className="text-center py-2">10 MB<br/>1M chars</td>
+                            </tr>
+                            <tr>
+                              <td className="py-2 font-mono">.srt</td>
+                              <td className="text-center py-2">150 KB<br/>500k chars</td>
+                              <td className="text-center py-2">150 KB<br/>1M chars</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-3">
+                        * Os limites aplicam-se por documento individual
                       </p>
                     </div>
                   </div>
@@ -506,9 +571,9 @@ function App() {
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                 <Upload className="w-6 h-6 text-blue-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Processamento Direto</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">Múltiplos Formatos</h3>
               <p className="text-gray-600 text-sm">
-                Seus arquivos são processados diretamente via API DeepL
+                Suporte para 8 formatos diferentes com limites específicos
               </p>
             </div>
 
@@ -516,9 +581,9 @@ function App() {
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
                 <FileText className="w-6 h-6 text-green-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">IA Avançada</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">API DeepL</h3>
               <p className="text-gray-600 text-sm">
-                Powered by DeepL para traduções de alta qualidade
+                Free: 500k chars/mês | Pro: sem limite de uso
               </p>
             </div>
 
