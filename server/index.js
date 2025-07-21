@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const * as deepl from 'deepl-node';
-const path = require('path');
 
 const app = express();
 const port = 3001;
@@ -25,7 +24,6 @@ const activeTranslations = new Map();
 // Initialize DeepL translator
 let translator = null;
 
-// Initialize translator with API key
 const initializeTranslator = (apiKey) => {
   if (!translator || translator.authKey !== apiKey) {
     translator = new deepl.Translator(apiKey);
@@ -55,10 +53,10 @@ app.post('/api/translate/upload', upload.single('file'), async (req, res) => {
     console.log('Target language:', target_lang);
     console.log('File size:', req.file.size);
 
-    const translator = initializeTranslator(apiKey);
+    const translatorInstance = initializeTranslator(apiKey);
 
     // Upload document to DeepL
-    const uploadResult = await translator.uploadDocument(
+    const uploadResult = await translatorInstance.uploadDocument(
       req.file.buffer,
       req.file.originalname,
       target_lang
@@ -112,12 +110,12 @@ app.post('/api/translate/status/:documentId', async (req, res) => {
       return res.status(401).json({ error: 'API key is required' });
     }
 
-    const translator = initializeTranslator(apiKey);
+    const translatorInstance = initializeTranslator(apiKey);
     
     console.log('Checking status for document:', documentId);
 
     // Check document status
-    const status = await translator.getDocumentStatus(documentId, document_key);
+    const status = await translatorInstance.getDocumentStatus(documentId, document_key);
     
     console.log('Document status:', status.status);
 
@@ -152,12 +150,12 @@ app.post('/api/translate/download/:documentId', async (req, res) => {
       return res.status(401).json({ error: 'API key is required' });
     }
 
-    const translator = initializeTranslator(apiKey);
+    const translatorInstance = initializeTranslator(apiKey);
     
     console.log('Downloading document:', documentId);
 
     // Download the translated document
-    const result = await translator.downloadDocument(documentId, document_key);
+    const result = await translatorInstance.downloadDocument(documentId, document_key);
     
     // Get original filename
     const translationInfo = activeTranslations.get(documentId);
@@ -184,33 +182,6 @@ app.post('/api/translate/download/:documentId', async (req, res) => {
   }
 });
 
-// Get supported languages
-app.get('/api/translate/languages', async (req, res) => {
-  try {
-    const apiKey = req.headers.authorization?.replace('Bearer ', '');
-    
-    if (!apiKey) {
-      return res.status(401).json({ error: 'API key is required' });
-    }
-
-    const translator = initializeTranslator(apiKey);
-    
-    // Get target languages
-    const languages = await translator.getTargetLanguages();
-    
-    res.json(languages.map(lang => ({
-      code: lang.code,
-      name: lang.name
-    })));
-
-  } catch (error) {
-    console.error('Languages error:', error);
-    res.status(500).json({ 
-      error: error.message || 'Failed to get supported languages' 
-    });
-  }
-});
-
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -226,6 +197,5 @@ app.listen(port, () => {
   console.log('  POST /api/translate/upload - Upload document for translation');
   console.log('  POST /api/translate/status/:id - Check translation status');
   console.log('  POST /api/translate/download/:id - Download translated document');
-  console.log('  GET /api/translate/languages - Get supported languages');
   console.log('  GET /api/health - Health check');
 });

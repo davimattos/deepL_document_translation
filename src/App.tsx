@@ -84,10 +84,10 @@ function App() {
       console.log('Target Language:', targetLanguage);
       console.log('File:', file.name);
 
-      const uploadResponse = await fetch('https://api-free.deepl.com/v2/document', {
+      const uploadResponse = await fetch('http://localhost:3001/api/translate/upload', {
         method: 'POST',
         headers: {
-          'Authorization': `DeepL-Auth-Key ${apiKey}`,
+          'Authorization': `Bearer ${apiKey}`,
         },
         body: uploadFormData,
       });
@@ -122,17 +122,17 @@ function App() {
       while (!translationComplete && attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 2000)); // Aguarda 2 segundos
 
-        const statusFormData = new FormData();
-        statusFormData.append('document_key', uploadResult.document_key);
-
         const statusResponse = await fetch(
-          `https://api-free.deepl.com/v2/document/${uploadResult.document_id}`,
+          `http://localhost:3001/api/translate/status/${uploadResult.document_id}`,
           {
             method: 'POST',
             headers: {
-              'Authorization': `DeepL-Auth-Key ${apiKey}`,
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
             },
-            body: statusFormData,
+            body: JSON.stringify({
+              document_key: uploadResult.document_key
+            }),
           }
         );
 
@@ -190,17 +190,17 @@ function App() {
       console.log('Document ID:', deepLResponse.document_id);
       console.log('Document Key:', deepLResponse.document_key.substring(0, 10) + '...');
 
-      const downloadFormData = new FormData();
-      downloadFormData.append('document_key', deepLResponse.document_key);
-
       const downloadResponse = await fetch(
-        `https://api-free.deepl.com/v2/document/${deepLResponse.document_id}/result`,
+        `http://localhost:3001/api/translate/download/${deepLResponse.document_id}`,
         {
           method: 'POST',
           headers: {
-            'Authorization': `DeepL-Auth-Key ${apiKey}`,
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
           },
-          body: downloadFormData,
+          body: JSON.stringify({
+            document_key: deepLResponse.document_key
+          }),
         }
       );
 
