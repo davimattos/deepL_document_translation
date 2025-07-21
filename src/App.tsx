@@ -122,17 +122,17 @@ function App() {
       while (!translationComplete && attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 2000)); // Aguarda 2 segundos
 
+        const statusFormData = new FormData();
+        statusFormData.append('document_key', uploadResult.document_key);
+
         const statusResponse = await fetch(
-          `http://localhost:3001/api/translate/status/${uploadResult.document_id}`,
+          `https://api-free.deepl.com/v2/document/${uploadResult.document_id}`,
           {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
+              'Authorization': `DeepL-Auth-Key ${apiKey}`,
             },
-            body: JSON.stringify({
-              document_key: uploadResult.document_key
-            }),
+            body: statusFormData,
           }
         );
 
@@ -190,17 +190,17 @@ function App() {
       console.log('Document ID:', deepLResponse.document_id);
       console.log('Document Key:', deepLResponse.document_key.substring(0, 10) + '...');
 
+      const downloadFormData = new FormData();
+      downloadFormData.append('document_key', deepLResponse.document_key);
+
       const downloadResponse = await fetch(
-        `http://localhost:3001/api/translate/download/${deepLResponse.document_id}`,
+        `https://api-free.deepl.com/v2/document/${deepLResponse.document_id}/result`,
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
+            'Authorization': `DeepL-Auth-Key ${apiKey}`,
           },
-          body: JSON.stringify({
-            document_key: deepLResponse.document_key
-          }),
+          body: downloadFormData,
         }
       );
 
