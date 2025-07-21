@@ -558,9 +558,9 @@ function App() {
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                 <Upload className="w-6 h-6 text-blue-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Múltiplos Formatos</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">Processamento Direto</h3>
               <p className="text-gray-600 text-sm">
-                Suporte para 8 formatos diferentes com limites específicos
+                Seus arquivos são processados diretamente via API DeepL
               </p>
             </div>
 
@@ -568,9 +568,9 @@ function App() {
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
                 <FileText className="w-6 h-6 text-green-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">API DeepL</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">IA Avançada</h3>
               <p className="text-gray-600 text-sm">
-                Free: 500k chars/mês | Pro: sem limite de uso
+                Powered by DeepL para traduções de alta qualidade
               </p>
             </div>
 
