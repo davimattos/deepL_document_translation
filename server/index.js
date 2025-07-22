@@ -55,39 +55,64 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
 
     const translatorInstance = initializeTranslator(apiKey);
 
-    // Create downloads directory if it doesn't exist
-    const downloadsDir = path.join(process.cwd(), 'downloads');
-    if (!fs.existsSync(downloadsDir)) {
-      fs.mkdirSync(downloadsDir, { recursive: true });
-    }
-
-    // Generate unique filename for translated document
-    const timestamp = Date.now();
-    const originalFilename = req.file.originalname;
-    const fileExtension = originalFilename.split('.').pop();
-    const translatedFilename = `translated_${timestamp}_${originalFilename}`;
-    const outputPath = path.join(downloadsDir, translatedFilename);
-
-    // Use translateDocument method to save file directly to disk
-    await translatorInstance.translateDocument(
+    // Use translateDocument method - handles everything internally
+    const result = await translatorInstance.translateDocument(
       req.file.buffer,
-      outputPath,
+      `translated_${req.file.originalname}`,
       'pt',
       target_lang,
       {filename: req.file.originalname}
     );
 
     console.log('Translation completed successfully');
-    console.log('File saved to:', outputPath);
 
-    // Return file information for frontend download
-    res.json({
-      success: true,
-      message: 'Document translated successfully',
-      downloadUrl: `/downloads/${translatedFilename}`,
-      filename: translatedFilename,
-      originalFilename: originalFilename
-    });
+    // Determine content type based on file extension
+    const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase();
+    let contentType = 'application/octet-stream';
+    
+    switch (fileExtension) {
+      case 'docx':
+        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        break;
+      case 'pptx':
+        contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+        break;
+      case 'xlsx':
+        contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        break;
+      case 'pdf':
+        contentType = 'application/pdf';
+        break;
+      case 'txt':
+        contentType = 'text/plain';
+        break;
+      case 'html':
+      case 'htm':
+        contentType = 'text/html';
+        break;
+      case 'xlf':
+      case 'xliff':
+        contentType = 'application/xml';
+        break;
+      case 'srt':
+        contentType = 'text/plain';
+        break;
+      default:
+        contentType = 'application/octet-stream';
+    }
+
+    // Generate filename for translated document
+    const originalFilename = req.file.originalname;
+    const filename = `translated_${originalFilename}`;
+
+    // Set appropriate headers for file download
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', result.length);
+    res.setHeader('Cache-Control', 'no-cache');
+    
+    // Send the translated document as buffer
+    res.end(result);
 
   } catch (error) {
     console.error('Translation error:', error);
@@ -114,6 +139,59 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
       error: error.message || 'Failed to translate document' 
     });
   }
+});
+
+// Download endpoint
+app.get('/downloads/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(process.cwd(), 'downloads', filename);
+  
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'File not found' });
+  }
+
+  // Determine content type based on file extension
+  const fileExtension = filename.split('.').pop()?.toLowerCase();
+  let contentType = 'application/octet-stream';
+  
+  switch (fileExtension) {
+    case 'docx':
+      contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      break;
+    case 'pptx':
+      contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+      break;
+    case 'xlsx':
+      contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      break;
+    case 'pdf':
+      contentType = 'application/pdf';
+      break;
+    case 'txt':
+      contentType = 'text/plain';
+      break;
+    case 'html':
+    case 'htm':
+      contentType = 'text/html';
+      break;
+    case 'xlf':
+    case 'xliff':
+      contentType = 'application/xml';
+      break;
+    case 'srt':
+      contentType = 'text/plain';
+      break;
+    default:
+      contentType = 'application/octet-stream';
+  }
+
+  // Set headers for download
+  res.setHeader('Content-Type', contentType);
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader('Cache-Control', 'no-cache');
+  
+  // Send file
+  res.sendFile(filePath);
 });
 
 // Health check

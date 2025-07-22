@@ -105,20 +105,18 @@ function App() {
 
       setProcessing({ status: 'processing', progress: 90, message: 'Finalizando download...' });
 
-      // O response já contém o arquivo traduzido
-      const translatedDocument = await response.blob();
-      console.log('Translation completed, file size:', translatedDocument.size);
-      setProcessedFile(translatedDocument);
+      // O response contém informações do arquivo traduzido
+      const result = await response.json();
+      console.log('Translation completed:', result);
 
-      // Download automático
-      const url = URL.createObjectURL(translatedDocument);
+      // Download automático do arquivo
+      const downloadUrl = `http://localhost:3001${result.downloadUrl}`;
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `translated_${file.name}`;
+      a.href = downloadUrl;
+      a.download = result.filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
 
       setProcessing({ status: 'completed', progress: 100, message: 'Documento processado com sucesso!' });
 
