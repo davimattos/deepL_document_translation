@@ -132,8 +132,26 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
     // Send the translated document as buffer
     res.end(result);
 
+    // Clean up uploaded file after processing
+    try {
+      fs.unlinkSync(req.file.path);
+      console.log('Deleted uploaded file:', req.file.path);
+    } catch (cleanupErr) {
+      console.error('Error deleting uploaded file:', cleanupErr);
+    }
+
   } catch (error) {
     console.error('Translation error:', error);
+    
+    // Clean up uploaded file even if translation fails
+    if (req.file?.path) {
+      try {
+        fs.unlinkSync(req.file.path);
+        console.log('Deleted uploaded file after error:', req.file.path);
+      } catch (cleanupErr) {
+        console.error('Error deleting uploaded file after error:', cleanupErr);
+      }
+    }
     
     if (error.message?.includes('quota')) {
       return res.status(429).json({ 
@@ -181,6 +199,14 @@ app.get('/downloads/:filename', (req, res) => {
     case 'pptx':
       contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
       break;
+      
+      // Delete the downloaded file after successful download
+      try {
+        fs.unlinkSync(filePath);
+        console.log('Deleted downloaded file:', filePath);
+      } catch (deleteErr) {
+        console.error('Error deleting downloaded file:', deleteErr);
+      }
     case 'xlsx':
       contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
       break;
