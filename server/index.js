@@ -55,7 +55,7 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
     // Use translateDocument method - handles everything internally
     const result = await translatorInstance.translateDocument(
       req.file.buffer,
-      `translated_${req.file.originalname}`,
+      null,
       'pt',
       target_lang,
       {filename: req.file.originalname}
