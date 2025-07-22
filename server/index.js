@@ -29,7 +29,13 @@ const app = express();
 const port = 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
 app.use(express.json());
 app.use('/downloads', express.static(path.join(process.cwd(), 'downloads')));
 
@@ -45,6 +51,9 @@ const initializeTranslator = (apiKey) => {
 
 // Configure multer for file uploads
 const upload = multer({ dest: uploadsDir });
+
+// Handle preflight requests
+app.options('*', cors());
 
 // Translate document - handles upload, polling and download in one endpoint
 app.post('/api/translate', upload.single('file'), async (req, res) => {
