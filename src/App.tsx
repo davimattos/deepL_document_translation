@@ -28,7 +28,6 @@ function App() {
     if (fileExtension && allowedExtensions.includes(fileExtension)) {
       setFile(selectedFile);
       setProcessedFile(null);
-      setDeepLResponse(null);
       setErrorMessage('');
       setProcessing({ status: 'idle', progress: 0, message: '' });
     } else {

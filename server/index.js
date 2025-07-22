@@ -1,7 +1,7 @@
-const express = require('express');
-const cors = require('cors');
-const multer = require('multer');
-const * as deepl from 'deepl-node';
+import express from 'express';
+import cors from 'cors';
+import multer from 'multer';
+import * as deepl from 'deepl-node';
 
 const app = express();
 const port = 3001;
