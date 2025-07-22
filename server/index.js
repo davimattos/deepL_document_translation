@@ -63,6 +63,14 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
 
     const translatorInstance = initializeTranslator(apiKey);
 
+    // Translate document and get result
+    const result = await translatorInstance.translateDocument(
+      fs.createReadStream(req.file.path),
+      req.file.originalname,
+      null,
+      target_lang
+    );
+
     // Generate unique filename
     const timestamp = Date.now();
     const originalName = req.file.originalname;
@@ -103,14 +111,6 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
         contentType = 'application/octet-stream';
     }
 
-    // Translate document and save to file
-    const result = await translatorInstance.translateDocument(
-      fs.createReadStream(req.file.path),
-      outputPath,
-      null,
-      target_lang
-    );
-
     // Generate filename for translated document
     const originalFilename = req.file.originalname;
     const filename = `translated_${originalFilename}`;
@@ -124,8 +124,6 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
     // Send the translated document as buffer
     res.end(result);
 
-    console.log('File saved to:', outputPath);
-
   } catch (error) {
     console.error('Translation error:', error);
     
@@ -133,6 +131,7 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
       return res.status(429).json({ 
         error: 'API quota exceeded. Please check your DeepL account limits.' 
       });
+    // Translate document and save to file
     }
     
     if (error.message?.includes('auth')) {
@@ -141,6 +140,7 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
       });
     }
 
+    console.log('File saved to:', outputPath);
     if (error.message?.includes('file size')) {
       return res.status(413).json({ 
         error: 'File too large. Please check the file size limits for your file type.' 
@@ -156,26 +156,54 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
 // Download endpoint
 app.get('/downloads/:filename', (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join(downloadsDir, filename);
+  const filePath = path.join(process.cwd(), 'downloads', filename);
   
   if (!fs.existsSync(filePath)) {
-    console.log('File not found:', filePath);
     return res.status(404).json({ error: 'File not found' });
   }
 
-  console.log('Downloading file:', filePath);
+  // Determine content type based on file extension
+  const fileExtension = filename.split('.').pop()?.toLowerCase();
+  let contentType = 'application/octet-stream';
   
-  // Use res.download for automatic download
-  res.download(filePath, filename, (err) => {
-    if (err) {
-      console.error('Download error:', err);
-      if (!res.headersSent) {
-        res.status(500).json({ error: 'Error downloading file' });
-      }
-    } else {
-      console.log('File downloaded successfully:', filename);
-    }
-  });
+  switch (fileExtension) {
+    case 'docx':
+      contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      break;
+    case 'pptx':
+      contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+      break;
+    case 'xlsx':
+      contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      break;
+    case 'pdf':
+      contentType = 'application/pdf';
+      break;
+    case 'txt':
+      contentType = 'text/plain';
+      break;
+    case 'html':
+    case 'htm':
+      contentType = 'text/html';
+      break;
+    case 'xlf':
+    case 'xliff':
+      contentType = 'application/xml';
+      break;
+    case 'srt':
+      contentType = 'text/plain';
+      break;
+    default:
+      contentType = 'application/octet-stream';
+  }
+
+  // Set headers for download
+  res.setHeader('Content-Type', contentType);
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader('Cache-Control', 'no-cache');
+  
+  // Send file
+  res.sendFile(filePath);
 });
 
 // Health check
