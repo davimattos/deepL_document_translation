@@ -189,9 +189,9 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
 });
 
 // Download endpoint
-app.get('/downloads/:filename', (req, res) => {
+app.get('/api/download/:filename', (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join(process.cwd(), 'downloads', filename);
+  const filePath = path.join(downloadsDir, filename);
   
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'File not found' });
@@ -245,8 +245,24 @@ app.get('/downloads/:filename', (req, res) => {
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   res.setHeader('Cache-Control', 'no-cache');
   
-  // Send file
-  res.sendFile(filePath);
+  // Send file and cleanup after download
+  res.download(filePath, filename, (err) => {
+    if (err) {
+      console.error('Download error:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Download failed' });
+      }
+    } else {
+      console.log('File downloaded successfully:', filename);
+      // Delete the downloaded file after successful download
+      try {
+        fs.unlinkSync(filePath);
+        console.log('Deleted downloaded file:', filePath);
+      } catch (deleteErr) {
+        console.error('Error deleting downloaded file:', deleteErr);
+      }
+    }
+  });
 });
 
 // Health check
@@ -262,5 +278,5 @@ app.listen(port, () => {
   console.log('Available endpoints:');
   console.log('  POST /api/translate - Translate document (upload, process, download)');
   console.log('  GET /api/health - Health check');
-  console.log('  GET /downloads/:filename - Download translated files');
+  console.log('  GET /api/download/:filename - Download translated files');
 });
