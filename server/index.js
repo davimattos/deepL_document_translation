@@ -36,6 +36,9 @@ const initializeTranslator = (apiKey) => {
   return translator;
 };
 
+// Configure multer for file uploads
+const upload = multer({ dest: 'uploads/' });
+
 // Translate document - handles upload, polling and download in one endpoint
 app.post('/api/translate', upload.single('file'), async (req, res) => {
   try {
@@ -100,6 +103,14 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
         contentType = 'application/octet-stream';
     }
 
+    // Translate document and save to file
+    const result = await translatorInstance.translateDocument(
+      fs.createReadStream(req.file.path),
+      outputPath,
+      null,
+      target_lang
+    );
+
     // Generate filename for translated document
     const originalFilename = req.file.originalname;
     const filename = `translated_${originalFilename}`;
@@ -113,13 +124,15 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
     // Send the translated document as buffer
     res.end(result);
 
+    console.log('File saved to:', outputPath);
+
   } catch (error) {
     console.error('Translation error:', error);
     
     if (error.message?.includes('quota')) {
       return res.status(429).json({ 
         error: 'API quota exceeded. Please check your DeepL account limits.' 
-    // Translate document and save to file
+      });
     }
     
     if (error.message?.includes('auth')) {
@@ -128,7 +141,6 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
       });
     }
 
-    console.log('File saved to:', outputPath);
     if (error.message?.includes('file size')) {
       return res.status(413).json({ 
         error: 'File too large. Please check the file size limits for your file type.' 
