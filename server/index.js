@@ -13,13 +13,12 @@ const projectRoot = path.dirname(__dirname);
 const downloadsDir = path.join(projectRoot, 'downloads');
 const uploadsDir = path.join(projectRoot, 'uploads');
 
-// Create downloads directory if it doesn't exist
+// Create directories if they don't exist
 if (!fs.existsSync(downloadsDir)) {
   fs.mkdirSync(downloadsDir, { recursive: true });
   console.log('Created downloads directory:', downloadsDir);
 }
 
-// Create uploads directory if it doesn't exist
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
   console.log('Created uploads directory:', uploadsDir);
@@ -36,8 +35,11 @@ app.use(cors({
   credentials: true,
   optionsSuccessStatus: 200
 }));
+
 app.use(express.json());
-app.use('/downloads', express.static(path.join(process.cwd(), 'downloads')));
+
+// Configure multer for file uploads
+const upload = multer({ dest: uploadsDir });
 
 // Initialize DeepL translator
 let translator = null;
@@ -49,13 +51,10 @@ const initializeTranslator = (apiKey) => {
   return translator;
 };
 
-// Configure multer for file uploads
-const upload = multer({ dest: uploadsDir });
-
 // Handle preflight requests
 app.options('*', cors());
 
-// Translate document - handles upload, polling and download in one endpoint
+// Translate document endpoint
 app.post('/api/translate', upload.single('file'), async (req, res) => {
   try {
     const { target_lang } = req.body;
@@ -79,75 +78,46 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
 
     const translatorInstance = initializeTranslator(apiKey);
 
-    // Translate document and get result
-    const result = await translatorInstance.translateDocument(
-      fs.createReadStream(req.file.path),
-      path.join(downloadsDir, req.file.originalname),
-      'pt',
-      target_lang,
-      {filename: req.file.originalname}
-    );
-
-    // Generate unique filename
+    // Generate unique filename for translated document
     const timestamp = Date.now();
     const originalName = req.file.originalname;
     const fileExtension = originalName.split('.').pop();
     const baseName = originalName.replace(`.${fileExtension}`, '');
     const outputFilename = `translated_${baseName}_${timestamp}.${fileExtension}`;
     const outputPath = path.join(downloadsDir, outputFilename);
-    let contentType = 'application/octet-stream';
-    
-    switch (fileExtension) {
-      case 'docx':
-        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-        break;
-      case 'pptx':
-        contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-        break;
-      case 'xlsx':
-        contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-        break;
-      case 'pdf':
-        contentType = 'application/pdf';
-        break;
-      case 'txt':
-        contentType = 'text/plain';
-        break;
-      case 'html':
-      case 'htm':
-        contentType = 'text/html';
-        break;
-      case 'xlf':
-      case 'xliff':
-        contentType = 'application/xml';
-        break;
-      case 'srt':
-        contentType = 'text/plain';
-        break;
-      default:
-        contentType = 'application/octet-stream';
-    }
 
-    // Generate filename for translated document
-    const originalFilename = req.file.originalname;
-    const filename = `translated_${originalFilename}`;
+    // Translate document using translateDocument function
+    const result = await translatorInstance.translateDocument(
+      fs.createReadStream(req.file.path),
+      outputPath,
+      'pt', // source language (Portuguese)
+      target_lang,
+      {
+        filename: req.file.originalname
+      }
+    );
 
-    // Set appropriate headers for file download
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Length', result.length);
-    res.setHeader('Cache-Control', 'no-cache');
-    
-    // Send the translated document as buffer
-    res.end(result);
+    console.log('Translation completed successfully');
+    console.log('Output file saved to:', outputPath);
 
-    // Clean up uploaded file after processing
+    // Clean up uploaded file
     try {
       fs.unlinkSync(req.file.path);
       console.log('Deleted uploaded file:', req.file.path);
     } catch (cleanupErr) {
       console.error('Error deleting uploaded file:', cleanupErr);
     }
+
+    // Return download URL
+    const downloadUrl = `/api/downloads/${outputFilename}`;
+    
+    res.json({
+      success: true,
+      message: 'Document translated successfully',
+      downloadUrl: downloadUrl,
+      filename: outputFilename,
+      originalFilename: req.file.originalname
+    });
 
   } catch (error) {
     console.error('Translation error:', error);
@@ -162,11 +132,11 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
       }
     }
     
+    // Handle specific DeepL errors
     if (error.message?.includes('quota')) {
       return res.status(429).json({ 
         error: 'API quota exceeded. Please check your DeepL account limits.' 
       });
-    // Translate document and save to file
     }
     
     if (error.message?.includes('auth')) {
@@ -175,7 +145,6 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
       });
     }
 
-    console.log('File saved to:', outputPath);
     if (error.message?.includes('file size')) {
       return res.status(413).json({ 
         error: 'File too large. Please check the file size limits for your file type.' 
@@ -189,11 +158,15 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
 });
 
 // Download endpoint
-app.get('/api/download/:filename', (req, res) => {
+app.get('/api/downloads/:filename', (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(downloadsDir, filename);
   
+  console.log('Download requested for:', filename);
+  console.log('File path:', filePath);
+  
   if (!fs.existsSync(filePath)) {
+    console.log('File not found:', filePath);
     return res.status(404).json({ error: 'File not found' });
   }
 
@@ -208,14 +181,6 @@ app.get('/api/download/:filename', (req, res) => {
     case 'pptx':
       contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
       break;
-      
-      // Delete the downloaded file after successful download
-      try {
-        fs.unlinkSync(filePath);
-        console.log('Deleted downloaded file:', filePath);
-      } catch (deleteErr) {
-        console.error('Error deleting downloaded file:', deleteErr);
-      }
     case 'xlsx':
       contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
       break;
@@ -254,7 +219,7 @@ app.get('/api/download/:filename', (req, res) => {
       }
     } else {
       console.log('File downloaded successfully:', filename);
-      // Delete the downloaded file after successful download
+      // Delete the file after successful download
       try {
         fs.unlinkSync(filePath);
         console.log('Deleted downloaded file:', filePath);
@@ -265,18 +230,26 @@ app.get('/api/download/:filename', (req, res) => {
   });
 });
 
-// Health check
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok', 
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    directories: {
+      uploads: uploadsDir,
+      downloads: downloadsDir
+    }
   });
 });
 
 app.listen(port, () => {
   console.log(`DeepL Translation Server running on http://localhost:${port}`);
   console.log('Available endpoints:');
-  console.log('  POST /api/translate - Translate document (upload, process, download)');
+  console.log('  POST /api/translate - Translate document and return download URL');
+  console.log('  GET /api/downloads/:filename - Download translated files');
   console.log('  GET /api/health - Health check');
-  console.log('  GET /api/download/:filename - Download translated files');
+  console.log('');
+  console.log('Directories:');
+  console.log('  Uploads:', uploadsDir);
+  console.log('  Downloads:', downloadsDir);
 });
