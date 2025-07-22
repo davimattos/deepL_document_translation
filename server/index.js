@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import * as deepl from 'deepl-node';
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
 const port = 3001;
@@ -9,6 +11,7 @@ const port = 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/downloads', express.static(path.join(process.cwd(), 'downloads')));
 
 // Configure multer for file uploads
 const upload = multer({ 
@@ -52,64 +55,39 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
 
     const translatorInstance = initializeTranslator(apiKey);
 
-    // Use translateDocument method - handles everything internally
-    const result = await translatorInstance.translateDocument(
+    // Create downloads directory if it doesn't exist
+    const downloadsDir = path.join(process.cwd(), 'downloads');
+    if (!fs.existsSync(downloadsDir)) {
+      fs.mkdirSync(downloadsDir, { recursive: true });
+    }
+
+    // Generate unique filename for translated document
+    const timestamp = Date.now();
+    const originalFilename = req.file.originalname;
+    const fileExtension = originalFilename.split('.').pop();
+    const translatedFilename = `translated_${timestamp}_${originalFilename}`;
+    const outputPath = path.join(downloadsDir, translatedFilename);
+
+    // Use translateDocument method to save file directly to disk
+    await translatorInstance.translateDocument(
       req.file.buffer,
-      `translated_${req.file.originalname}`,
+      outputPath,
       'pt',
       target_lang,
       {filename: req.file.originalname}
     );
 
     console.log('Translation completed successfully');
+    console.log('File saved to:', outputPath);
 
-    // Determine content type based on file extension
-    const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase();
-    let contentType = 'application/octet-stream';
-    
-    switch (fileExtension) {
-      case 'docx':
-        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-        break;
-      case 'pptx':
-        contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-        break;
-      case 'xlsx':
-        contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-        break;
-      case 'pdf':
-        contentType = 'application/pdf';
-        break;
-      case 'txt':
-        contentType = 'text/plain';
-        break;
-      case 'html':
-      case 'htm':
-        contentType = 'text/html';
-        break;
-      case 'xlf':
-      case 'xliff':
-        contentType = 'application/xml';
-        break;
-      case 'srt':
-        contentType = 'text/plain';
-        break;
-      default:
-        contentType = 'application/octet-stream';
-    }
-
-    // Generate filename for translated document
-    const originalFilename = req.file.originalname;
-    const filename = `translated_${originalFilename}`;
-
-    // Set appropriate headers for file download
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Length', result.length);
-    res.setHeader('Cache-Control', 'no-cache');
-    
-    // Send the translated document as buffer
-    res.end(result);
+    // Return file information for frontend download
+    res.json({
+      success: true,
+      message: 'Document translated successfully',
+      downloadUrl: `/downloads/${translatedFilename}`,
+      filename: translatedFilename,
+      originalFilename: originalFilename
+    });
 
   } catch (error) {
     console.error('Translation error:', error);
