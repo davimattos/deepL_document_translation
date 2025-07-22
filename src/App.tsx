@@ -15,7 +15,7 @@ function App() {
     progress: 0,
     message: ''
   });
-  const [apiKey, setApiKey] = useState<string>('d482c60c-9584-4ea1-92df-e586a3d9036c:fx');
+  const [apiKey, setApiKey] = useState<string>('');
   const [targetLanguage, setTargetLanguage] = useState<string>('en-US');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
