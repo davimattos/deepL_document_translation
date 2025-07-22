@@ -151,7 +151,7 @@ function App() {
     { code: 'DA', name: 'Dinamarquês' },
     { code: 'DE', name: 'Alemão' },
     { code: 'EL', name: 'Grego' },
-    { code: 'EN', name: 'Inglês' },
+    { code: 'en-US', name: 'Inglês' },
     { code: 'ES', name: 'Espanhol' },
     { code: 'ET', name: 'Estoniano' },
     { code: 'FI', name: 'Finlandês' },
