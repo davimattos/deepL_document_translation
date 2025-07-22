@@ -4,6 +4,19 @@ import multer from 'multer';
 import * as deepl from 'deepl-node';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get current directory for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.dirname(__dirname);
+const downloadsDir = path.join(projectRoot, 'downloads');
+
+// Create downloads directory if it doesn't exist
+if (!fs.existsSync(downloadsDir)) {
+  fs.mkdirSync(downloadsDir, { recursive: true });
+  console.log('Created downloads directory:', downloadsDir);
+}
 
 const app = express();
 const port = 3001;
@@ -12,14 +25,6 @@ const port = 3001;
 app.use(cors());
 app.use(express.json());
 app.use('/downloads', express.static(path.join(process.cwd(), 'downloads')));
-
-// Configure multer for file uploads
-const upload = multer({ 
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 30 * 1024 * 1024 // 30MB limit
-  }
-});
 
 // Initialize DeepL translator
 let translator = null;
@@ -55,19 +60,13 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
 
     const translatorInstance = initializeTranslator(apiKey);
 
-    // Use translateDocument method - handles everything internally
-    const result = await translatorInstance.translateDocument(
-      req.file.buffer,
-      `translated_${req.file.originalname}`,
-      'pt',
-      target_lang,
-      {filename: req.file.originalname}
-    );
-
-    console.log('Translation completed successfully');
-
-    // Determine content type based on file extension
-    const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase();
+    // Generate unique filename
+    const timestamp = Date.now();
+    const originalName = req.file.originalname;
+    const fileExtension = originalName.split('.').pop();
+    const baseName = originalName.replace(`.${fileExtension}`, '');
+    const outputFilename = `translated_${baseName}_${timestamp}.${fileExtension}`;
+    const outputPath = path.join(downloadsDir, outputFilename);
     let contentType = 'application/octet-stream';
     
     switch (fileExtension) {
@@ -120,7 +119,7 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
     if (error.message?.includes('quota')) {
       return res.status(429).json({ 
         error: 'API quota exceeded. Please check your DeepL account limits.' 
-      });
+    // Translate document and save to file
     }
     
     if (error.message?.includes('auth')) {
@@ -129,6 +128,7 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
       });
     }
 
+    console.log('File saved to:', outputPath);
     if (error.message?.includes('file size')) {
       return res.status(413).json({ 
         error: 'File too large. Please check the file size limits for your file type.' 
@@ -144,54 +144,26 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
 // Download endpoint
 app.get('/downloads/:filename', (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join(process.cwd(), 'downloads', filename);
+  const filePath = path.join(downloadsDir, filename);
   
   if (!fs.existsSync(filePath)) {
+    console.log('File not found:', filePath);
     return res.status(404).json({ error: 'File not found' });
   }
 
-  // Determine content type based on file extension
-  const fileExtension = filename.split('.').pop()?.toLowerCase();
-  let contentType = 'application/octet-stream';
+  console.log('Downloading file:', filePath);
   
-  switch (fileExtension) {
-    case 'docx':
-      contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      break;
-    case 'pptx':
-      contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-      break;
-    case 'xlsx':
-      contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      break;
-    case 'pdf':
-      contentType = 'application/pdf';
-      break;
-    case 'txt':
-      contentType = 'text/plain';
-      break;
-    case 'html':
-    case 'htm':
-      contentType = 'text/html';
-      break;
-    case 'xlf':
-    case 'xliff':
-      contentType = 'application/xml';
-      break;
-    case 'srt':
-      contentType = 'text/plain';
-      break;
-    default:
-      contentType = 'application/octet-stream';
-  }
-
-  // Set headers for download
-  res.setHeader('Content-Type', contentType);
-  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-  res.setHeader('Cache-Control', 'no-cache');
-  
-  // Send file
-  res.sendFile(filePath);
+  // Use res.download for automatic download
+  res.download(filePath, filename, (err) => {
+    if (err) {
+      console.error('Download error:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Error downloading file' });
+      }
+    } else {
+      console.log('File downloaded successfully:', filename);
+    }
+  });
 });
 
 // Health check

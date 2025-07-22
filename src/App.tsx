@@ -109,14 +109,9 @@ function App() {
       const result = await response.json();
       console.log('Translation completed:', result);
 
-      // Download automático do arquivo
+      // Download automático do arquivo em nova aba
       const downloadUrl = `http://localhost:3001${result.downloadUrl}`;
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = result.filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      window.open(downloadUrl, '_blank');
 
       setProcessing({ status: 'completed', progress: 100, message: 'Documento processado com sucesso!' });
 
