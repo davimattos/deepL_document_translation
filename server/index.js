@@ -66,9 +66,10 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
     // Translate document and get result
     const result = await translatorInstance.translateDocument(
       fs.createReadStream(req.file.path),
-      req.file.originalname,
-      null,
-      target_lang
+      path.join(downloadsDir, req.file.originalname),
+      'pt',
+      target_lang,
+      {filename: req.file.originalname}
     );
 
     // Generate unique filename
