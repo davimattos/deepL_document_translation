@@ -227,4 +227,12 @@ app.listen(port, () => {
   console.log('Available endpoints:');
   console.log('  POST /api/translate - Translate document (upload, process, download)');
   console.log('  GET /api/health - Health check');
+  console.log('  GET /downloads/:filename - Download translated files');
+  
+  // Criar arquivo de teste para testar o download
+  const testFilePath = path.join(downloadsDir, 'test-file.txt');
+  if (!fs.existsSync(testFilePath)) {
+    fs.writeFileSync(testFilePath, 'Este é um arquivo de teste para verificar se o download está funcionando corretamente.\n\nSe você conseguir baixar este arquivo, o endpoint de download está funcionando!');
+    console.log('Arquivo de teste criado:', testFilePath);
+  }
 });

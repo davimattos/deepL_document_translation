@@ -433,6 +433,30 @@ function App() {
                         Tentar Novamente
                       </button>
                     )}
+
+                    {/* Botão de teste para download */}
+                    <button
+                      onClick={() => {
+                        // Simula um download de teste
+                        const testDownloadUrl = 'http://localhost:3001/downloads/test-file.txt';
+                        console.log('Testando download:', testDownloadUrl);
+                        
+                        // Método 1: window.open (abre em nova aba)
+                        window.open(testDownloadUrl, '_blank');
+                        
+                        // Método 2: Link invisível com download (alternativa)
+                        // const link = document.createElement('a');
+                        // link.href = testDownloadUrl;
+                        // link.download = 'test-file.txt';
+                        // document.body.appendChild(link);
+                        // link.click();
+                        // document.body.removeChild(link);
+                      }}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm"
+                    >
+                      <Download className="w-4 h-4" />
+                      Testar Download
+                    </button>
                   </div>
 
                   {/* Error Message */}
