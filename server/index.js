@@ -11,11 +11,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.dirname(__dirname);
 const downloadsDir = path.join(projectRoot, 'downloads');
+const uploadsDir = path.join(projectRoot, 'uploads');
 
 // Create downloads directory if it doesn't exist
 if (!fs.existsSync(downloadsDir)) {
   fs.mkdirSync(downloadsDir, { recursive: true });
   console.log('Created downloads directory:', downloadsDir);
+}
+
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('Created uploads directory:', uploadsDir);
 }
 
 const app = express();
@@ -37,7 +44,7 @@ const initializeTranslator = (apiKey) => {
 };
 
 // Configure multer for file uploads
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: uploadsDir });
 
 // Translate document - handles upload, polling and download in one endpoint
 app.post('/api/translate', upload.single('file'), async (req, res) => {
