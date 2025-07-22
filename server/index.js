@@ -63,16 +63,53 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
 
     console.log('Translation completed successfully');
 
+    // Determine content type based on file extension
+    const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase();
+    let contentType = 'application/octet-stream';
+    
+    switch (fileExtension) {
+      case 'docx':
+        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        break;
+      case 'pptx':
+        contentType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+        break;
+      case 'xlsx':
+        contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        break;
+      case 'pdf':
+        contentType = 'application/pdf';
+        break;
+      case 'txt':
+        contentType = 'text/plain';
+        break;
+      case 'html':
+      case 'htm':
+        contentType = 'text/html';
+        break;
+      case 'xlf':
+      case 'xliff':
+        contentType = 'application/xml';
+        break;
+      case 'srt':
+        contentType = 'text/plain';
+        break;
+      default:
+        contentType = 'application/octet-stream';
+    }
+
     // Generate filename for translated document
     const originalFilename = req.file.originalname;
     const filename = `translated_${originalFilename}`;
 
     // Set appropriate headers for file download
-    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', result.length);
+    res.setHeader('Cache-Control', 'no-cache');
     
-    // Send the translated document directly
-    res.send(result);
+    // Send the translated document as buffer
+    res.end(result);
 
   } catch (error) {
     console.error('Translation error:', error);
