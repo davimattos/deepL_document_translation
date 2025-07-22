@@ -7,11 +7,6 @@ interface ProcessingState {
   message: string;
 }
 
-interface DeepLResponse {
-  document_id: string;
-  document_key: string;
-}
-
 function App() {
   const [file, setFile] = useState<File | null>(null);
   const [processedFile, setProcessedFile] = useState<Blob | null>(null);
@@ -22,7 +17,6 @@ function App() {
   });
   const [apiKey, setApiKey] = useState<string>('');
   const [targetLanguage, setTargetLanguage] = useState<string>('EN');
-  const [deepLResponse, setDeepLResponse] = useState<DeepLResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,21 +64,23 @@ function App() {
       return;
     }
 
-    setProcessing({ status: 'uploading', progress: 20, message: 'Enviando arquivo...' });
+    setProcessing({ status: 'uploading', progress: 10, message: 'Enviando arquivo...' });
     setErrorMessage('');
 
     try {
-      // Passo 1: Upload do documento para DeepL
+      // Tradução completa do documento (upload, processamento e download)
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
       uploadFormData.append('target_lang', targetLanguage);
 
-      console.log('Enviando arquivo para DeepL...');
+      console.log('Iniciando tradução completa...');
       console.log('API Key:', apiKey.substring(0, 10) + '...');
       console.log('Target Language:', targetLanguage);
       console.log('File:', file.name);
 
-      const uploadResponse = await fetch('http://localhost:3001/api/translate/upload', {
+      setProcessing({ status: 'processing', progress: 50, message: 'Traduzindo documento...' });
+
+      const response = await fetch('http://localhost:3001/api/translate', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -92,74 +88,38 @@ function App() {
         body: uploadFormData,
       });
 
-      console.log('Upload response status:', uploadResponse.status);
-      console.log('Upload response headers:', uploadResponse.headers);
+      console.log('Translation response status:', response.status);
 
-      if (!uploadResponse.ok) {
-        const responseText = await uploadResponse.text();
-        console.error('Upload error response:', responseText);
+      if (!response.ok) {
+        const responseText = await response.text();
+        console.error('Translation error response:', responseText);
         
-        let errorMessage = `Erro no upload (${uploadResponse.status})`;
+        let errorMessage = `Erro na tradução (${response.status})`;
         try {
           const errorData = JSON.parse(responseText);
-          errorMessage = `Erro no upload: ${errorData.message || errorData.detail || uploadResponse.statusText}`;
+          errorMessage = `Erro na tradução: ${errorData.error || errorData.message || response.statusText}`;
         } catch {
-          errorMessage = `Erro no upload: ${responseText || uploadResponse.statusText}`;
+          errorMessage = `Erro na tradução: ${responseText || response.statusText}`;
         }
         throw new Error(errorMessage);
       }
 
-      const uploadResult: DeepLResponse = await uploadResponse.json();
-      console.log('Upload result:', uploadResult);
-      setDeepLResponse(uploadResult);
-      setProcessing({ status: 'processing', progress: 50, message: 'Processando com DeepL...' });
+      setProcessing({ status: 'processing', progress: 90, message: 'Finalizando download...' });
 
-      // Passo 2: Verificar status da tradução (polling)
-      let translationComplete = false;
-      let attempts = 0;
-      const maxAttempts = 30; // 30 tentativas x 2 segundos = 1 minuto
+      // O response já contém o arquivo traduzido
+      const translatedDocument = await response.blob();
+      console.log('Translation completed, file size:', translatedDocument.size);
+      setProcessedFile(translatedDocument);
 
-      while (!translationComplete && attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Aguarda 2 segundos
-
-        const statusResponse = await fetch(
-          `http://localhost:3001/api/translate/status/${uploadResult.document_id}`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              document_key: uploadResult.document_key
-            }),
-          }
-        );
-
-        if (statusResponse.ok) {
-          const statusResult = await statusResponse.json();
-          console.log('Status result:', statusResult);
-          if (statusResult.status === 'done') {
-            translationComplete = true;
-          } else if (statusResult.status === 'error') {
-            throw new Error(`Erro na tradução: ${statusResult.message}`);
-          }
-        } else {
-          const statusText = await statusResponse.text();
-          console.warn(`Status check failed: ${statusResponse.status} - ${statusText}`);
-        }
-
-        attempts++;
-        setProcessing({ 
-          status: 'processing', 
-          progress: 50 + (attempts / maxAttempts) * 40, 
-          message: `Processando... (${attempts}/${maxAttempts})` 
-        });
-      }
-
-      if (!translationComplete) {
-        throw new Error('Timeout na tradução. Tente novamente com um arquivo menor.');
-      }
+      // Download automático
+      const url = URL.createObjectURL(translatedDocument);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `translated_${file.name}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
       setProcessing({ status: 'completed', progress: 100, message: 'Documento processado com sucesso!' });
 
@@ -175,77 +135,9 @@ function App() {
     }
   };
 
-  const downloadProcessedFile = async () => {
-    if (!deepLResponse || !apiKey.trim()) {
-      setErrorMessage('Dados necessários para download não encontrados');
-      return;
-    }
-
-    try {
-      setProcessing({ status: 'processing', progress: 90, message: 'Baixando arquivo processado...' });
-
-      // Download do documento traduzido
-
-      console.log('Baixando arquivo traduzido...');
-      console.log('Document ID:', deepLResponse.document_id);
-      console.log('Document Key:', deepLResponse.document_key.substring(0, 10) + '...');
-
-      const downloadResponse = await fetch(
-        `http://localhost:3001/api/translate/download/${deepLResponse.document_id}`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            document_key: deepLResponse.document_key
-          }),
-        }
-      );
-
-      console.log('Download response status:', downloadResponse.status);
-
-      if (!downloadResponse.ok) {
-        const responseText = await downloadResponse.text();
-        console.error('Download error response:', responseText);
-        throw new Error(`Erro no download (${downloadResponse.status}): ${responseText || downloadResponse.statusText}`);
-      }
-
-      const translatedDocument = await downloadResponse.blob();
-      console.log('Download completed, file size:', translatedDocument.size);
-      setProcessedFile(translatedDocument);
-
-      // Download automático
-      if (file) {
-        const url = URL.createObjectURL(translatedDocument);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `translated_${file.name}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }
-
-      setProcessing({ status: 'completed', progress: 100, message: 'Download concluído!' });
-
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Erro no download';
-      console.error('Download error:', error);
-      setErrorMessage(errorMsg);
-      setProcessing({
-        status: 'error',
-        progress: 0,
-        message: 'Erro no download'
-      });
-    }
-  };
-
   const resetUpload = () => {
     setFile(null);
     setProcessedFile(null);
-    setDeepLResponse(null);
     setErrorMessage('');
     setProcessing({ status: 'idle', progress: 0, message: '' });
     if (fileInputRef.current) {
@@ -534,16 +426,6 @@ function App() {
                       >
                         <Loader2 className="w-5 h-5 animate-spin" />
                         Processando...
-                      </button>
-                    )}
-
-                    {processing.status === 'completed' && deepLResponse && !processedFile && (
-                      <button
-                        onClick={downloadProcessedFile}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Download className="w-5 h-5" />
-                        Baixar Arquivo Traduzido
                       </button>
                     )}
 
