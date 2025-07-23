@@ -15,7 +15,7 @@ function App() {
     progress: 0,
     message: ''
   });
-  const [apiKey, setApiKey] = useState<string>('');
+  const [sourceLanguage, setSourceLanguage] = useState<string>('auto');
   const [targetLanguage, setTargetLanguage] = useState<string>('en-US');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -53,12 +53,12 @@ function App() {
   };
 
   const processFile = async () => {
-    if (!file || !apiKey.trim()) {
-      setErrorMessage('Por favor, forneça a chave da API do DeepL');
+    if (!file) {
+      setErrorMessage('Por favor, selecione um arquivo');
       setProcessing({
         status: 'error',
         progress: 0,
-        message: 'Chave da API necessária'
+        message: 'Arquivo necessário'
       });
       return;
     }
@@ -70,10 +70,11 @@ function App() {
       // Tradução completa do documento (upload, processamento e download)
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
+      uploadFormData.append('source_lang', sourceLanguage);
       uploadFormData.append('target_lang', targetLanguage);
 
       console.log('Iniciando tradução completa...');
-      console.log('API Key:', apiKey.substring(0, 10) + '...');
+      console.log('Source Language:', sourceLanguage);
       console.log('Target Language:', targetLanguage);
       console.log('File:', file.name);
 
@@ -81,9 +82,6 @@ function App() {
 
       const response = await fetch('http://localhost:3001/api/translate', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-        },
         body: uploadFormData,
       });
 
@@ -138,6 +136,7 @@ function App() {
   };
 
   const languages = [
+    { code: 'auto', name: 'Detectar automaticamente' },
     { code: 'AR', name: 'Árabe' },
     { code: 'BG', name: 'Búlgaro' },
     { code: 'CS', name: 'Tcheco' },
@@ -173,6 +172,42 @@ function App() {
     { code: 'ZH', name: 'Chinês' },
   ];
 
+  const sourceLanguages = [
+    { code: 'auto', name: 'Detectar automaticamente' },
+    { code: 'AR', name: 'Árabe' },
+    { code: 'BG', name: 'Búlgaro' },
+    { code: 'CS', name: 'Tcheco' },
+    { code: 'DA', name: 'Dinamarquês' },
+    { code: 'DE', name: 'Alemão' },
+    { code: 'EL', name: 'Grego' },
+    { code: 'EN', name: 'Inglês' },
+    { code: 'ES', name: 'Espanhol' },
+    { code: 'ET', name: 'Estoniano' },
+    { code: 'FI', name: 'Finlandês' },
+    { code: 'FR', name: 'Francês' },
+    { code: 'HE', name: 'Hebraico' },
+    { code: 'HU', name: 'Húngaro' },
+    { code: 'ID', name: 'Indonésio' },
+    { code: 'IT', name: 'Italiano' },
+    { code: 'JA', name: 'Japonês' },
+    { code: 'KO', name: 'Coreano' },
+    { code: 'LT', name: 'Lituano' },
+    { code: 'LV', name: 'Letão' },
+    { code: 'NB', name: 'Norueguês (Bokmål)' },
+    { code: 'NL', name: 'Holandês' },
+    { code: 'PL', name: 'Polonês' },
+    { code: 'PT', name: 'Português' },
+    { code: 'RO', name: 'Romeno' },
+    { code: 'RU', name: 'Russo' },
+    { code: 'SK', name: 'Eslovaco' },
+    { code: 'SL', name: 'Esloveno' },
+    { code: 'SV', name: 'Sueco' },
+    { code: 'TH', name: 'Tailandês' },
+    { code: 'TR', name: 'Turco' },
+    { code: 'UK', name: 'Ucraniano' },
+    { code: 'VI', name: 'Vietnamita' },
+    { code: 'ZH', name: 'Chinês' },
+  ];
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <div className="container mx-auto px-4 py-12">
@@ -199,27 +234,23 @@ function App() {
               
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-2">
-                    Chave da API DeepL
+                  <label htmlFor="sourceLanguage" className="block text-sm font-medium text-gray-700 mb-2">
+                    Idioma de Origem
                   </label>
-                  <input
-                    id="apiKey"
-                    type="password"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="Sua chave da API DeepL"
+                  <select
+                    id="sourceLanguage"
+                    value={sourceLanguage}
+                    onChange={(e) => setSourceLanguage(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  />
+                  >
+                    {sourceLanguages.map((lang) => (
+                      <option key={lang.code} value={lang.code}>
+                        {lang.name}
+                      </option>
+                    ))}
+                  </select>
                   <p className="text-xs text-gray-500 mt-1">
-                    Obtenha gratuitamente em{' '}
-                    <a 
-                      href="https://www.deepl.com/pro-api" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-700"
-                    >
-                      deepl.com/pro-api
-                    </a>
+                    Selecione o idioma do documento original
                   </p>
                 </div>
 
@@ -274,12 +305,7 @@ function App() {
                       </h3>
                       <p className="text-gray-600 mb-1">{file.name}</p>
                       <p className="text-sm text-gray-500">
-                        {(file.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
-                    <button
-                      onClick={resetUpload}
-                      className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                      className="flex-1 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       Selecionar outro arquivo
                     </button>

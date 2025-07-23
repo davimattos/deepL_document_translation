@@ -48,11 +48,11 @@ const initializeTranslator = (apiKey) => {
 // Translate document endpoint
 app.post('/api/translate', upload.single('file'), async (req, res) => {
   try {
-    const { target_lang } = req.body;
-    const apiKey = req.headers.authorization?.replace('Bearer ', '');
+    const { source_lang, target_lang } = req.body;
+    const apiKey = process.env.DEEPL_API_KEY;
     
     if (!apiKey) {
-      return res.status(401).json({ error: 'API key is required' });
+      return res.status(500).json({ error: 'DeepL API key not configured on server' });
     }
 
     if (!req.file) {
@@ -64,6 +64,7 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
     }
 
     console.log('Starting translation for:', req.file.originalname);
+    console.log('Source language:', source_lang || 'auto-detect');
     console.log('Target language:', target_lang);
     console.log('File size:', req.file.size);
 
@@ -81,7 +82,7 @@ app.post('/api/translate', upload.single('file'), async (req, res) => {
     const result = await translatorInstance.translateDocument(
       fs.createReadStream(req.file.path),
       outputPath,
-      'pt', // source language (Portuguese)
+      source_lang === 'auto' ? null : source_lang, // null for auto-detection
       target_lang,
       {
         filename: req.file.originalname
