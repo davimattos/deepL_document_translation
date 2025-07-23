@@ -221,26 +221,9 @@ app.get('/api/downloads/:filename', (req, res) => {
   });
 });
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    directories: {
-      uploads: uploadsDir, 
-      downloads: downloadsDir
-    }
-  });
-});
-
 app.listen(port, () => {
   console.log(`DeepL Translation Server running on http://localhost:${port}`);
   console.log('Available endpoints:');
   console.log('  POST /api/translate - Translate document and return download URL');
   console.log('  GET /api/downloads/:filename - Download translated files');
-  console.log('  GET /api/health - Health check');
-  console.log('');
-  console.log('Directories:');
-  console.log('  Uploads:', uploadsDir);
-  console.log('  Downloads:', downloadsDir);
 });
