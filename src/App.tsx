@@ -19,7 +19,7 @@ function App() {
   const [targetLanguage, setTargetLanguage] = useState<string>('en-US');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+ 
   const allowedExtensions = ['docx', 'pptx', 'xlsx', 'pdf', 'htm', 'html', 'txt', 'xlf', 'xliff', 'srt'];
 
   const handleFileSelect = (selectedFile: File) => {
