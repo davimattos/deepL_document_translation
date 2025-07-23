@@ -18,6 +18,7 @@ function App() {
   const [sourceLanguage, setSourceLanguage] = useState<string>('auto');
   const [targetLanguage, setTargetLanguage] = useState<string>('en-US');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [apiKey, setApiKey] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const allowedExtensions = ['docx', 'pptx', 'xlsx', 'pdf', 'htm', 'html', 'txt', 'xlf', 'xliff', 'srt'];
@@ -305,6 +306,11 @@ function App() {
                       </h3>
                       <p className="text-gray-600 mb-1">{file.name}</p>
                       <p className="text-sm text-gray-500">
+                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
                       className="flex-1 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       Selecionar outro arquivo
