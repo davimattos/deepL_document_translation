@@ -316,7 +316,7 @@ function App() {
                           <thead>
                             <tr className="border-b border-gray-200">
                               <th className="text-center py-2 font-medium text-gray-700">Formato</th>
-                              <th className="text-center py-2 font-medium text-gray-700">API Pro</th>
+                              <th className="text-center py-2 font-medium text-gray-700">Limites</th>
                             </tr>
                           </thead>
                           <tbody className="text-gray-600">
