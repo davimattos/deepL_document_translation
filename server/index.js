@@ -227,7 +227,7 @@ app.get('/api/health', (req, res) => {
     status: 'ok', 
     timestamp: new Date().toISOString(),
     directories: {
-      uploads: uploadsDir,
+      uploads: uploadsDir, 
       downloads: downloadsDir
     }
   });
