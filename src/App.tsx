@@ -316,40 +316,40 @@ function App() {
                           <thead>
                             <tr className="border-b border-gray-200">
                               <th className="text-center py-2 font-medium text-gray-700">Formato</th>
-                              <th className="text-center py-2 font-medium text-gray-700">Limite</th>
+                              <th className="text-center py-2 font-medium text-gray-700">DeepL Suporte</th>
                             </tr>
                           </thead>
                           <tbody className="text-gray-600">
                             <tr className="border-b border-gray-100">
-                              <td className="py-2 font-mono">.docx / .doc</td>
+                              <td className="py-2 font-mono">Word (.docx / .doc)	</td>
                               <td className="text-center py-2">30 MB<br/>1M chars</td>
                             </tr>
                             <tr className="border-b border-gray-100">
-                              <td className="py-2 font-mono">.pptx</td>
+                              <td className="py-2 font-mono">PowerPoint (.pptx)	</td>
                               <td className="text-center py-2">30 MB<br/>1M chars</td>
                             </tr>
                             <tr className="border-b border-gray-100">
-                              <td className="py-2 font-mono">.xlsx</td>
+                              <td className="py-2 font-mono">Excel (.xlsx)	</td>
                               <td className="text-center py-2">30 MB<br/>1M chars</td>
                             </tr>
                             <tr className="border-b border-gray-100">
-                              <td className="py-2 font-mono">.pdf</td>
+                              <td className="py-2 font-mono">PDF (.pdf)	</td>
                               <td className="text-center py-2">30 MB<br/>1M chars</td>
                             </tr>
                             <tr className="border-b border-gray-100">
-                              <td className="py-2 font-mono">.txt</td>
+                              <td className="py-2 font-mono">Text (.txt)</td>
                               <td className="text-center py-2">1 MB<br/>1M chars</td>
                             </tr>
                             <tr className="border-b border-gray-100">
-                              <td className="py-2 font-mono">.html</td>
+                              <td className="py-2 font-mono">HTML (.html)</td>
                               <td className="text-center py-2">5 MB<br/>1M chars</td>
                             </tr>
                             <tr className="border-b border-gray-100">
-                              <td className="py-2 font-mono">.xlf / .xliff</td>
+                              <td className="py-2 font-mono">XLIFF (.xlf/.xliff)*</td>
                               <td className="text-center py-2">10 MB<br/>1M chars</td>
                             </tr>
                             <tr>
-                              <td className="py-2 font-mono">.srt</td>
+                              <td className="py-2 font-mono">SRT (.srt)	</td>
                               <td className="text-center py-2">150 KB<br/>1M chars</td>
                             </tr>
                           </tbody>
