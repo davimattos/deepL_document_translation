@@ -48,7 +48,8 @@ const initializeTranslator = (apiKey) => {
 // Translate document endpoint
 app.post('/api/translate', upload.single('file'), async (req, res) => {
   try {
-    const { source_lang, target_lang, api_key } = req.body;
+    const { source_lang, target_lang } = req.body;
+    const api_key = req.headers.authorization?.replace('Bearer ', '');
     
     if (!api_key) {
       return res.status(400).json({ error: 'DeepL API key is required' });
