@@ -1,8 +1,15 @@
-import React, { useState, useRef } from 'react';
-import { Upload, Download, FileText, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState, useRef } from "react";
+import {
+  Upload,
+  Download,
+  FileText,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 
 interface ProcessingState {
-  status: 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
+  status: "idle" | "uploading" | "processing" | "completed" | "error";
   progress: number;
   message: string;
 }
@@ -10,31 +17,46 @@ interface ProcessingState {
 function App() {
   const [file, setFile] = useState<File | null>(null);
   const [processing, setProcessing] = useState<ProcessingState>({
-    status: 'idle',
+    status: "idle",
     progress: 0,
-    message: ''
+    message: "",
   });
-  const [apiKey] = useState<string>('');
-  const [sourceLanguage, setSourceLanguage] = useState<string>('auto');
-  const [targetLanguage, setTargetLanguage] = useState<string>('en-US');
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [apiKey] = useState<string>("08be78b8-5990-46b6-9740-9fcc0d60101d");
+  const [sourceLanguage, setSourceLanguage] = useState<string>("auto");
+  const [targetLanguage, setTargetLanguage] = useState<string>("en-US");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
- 
-  const allowedExtensions = ['docx', 'pptx', 'xlsx', 'pdf', 'htm', 'html', 'txt', 'xlf', 'xliff', 'srt'];
+
+  const allowedExtensions = [
+    "docx",
+    "pptx",
+    "xlsx",
+    "pdf",
+    "htm",
+    "html",
+    "txt",
+    "xlf",
+    "xliff",
+    "srt",
+  ];
 
   const handleFileSelect = (selectedFile: File) => {
-    const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase();
-    
+    const fileExtension = selectedFile.name.split(".").pop()?.toLowerCase();
+
     if (fileExtension && allowedExtensions.includes(fileExtension)) {
       setFile(selectedFile);
-      setErrorMessage('');
-      setProcessing({ status: 'idle', progress: 0, message: '' });
+      setErrorMessage("");
+      setProcessing({ status: "idle", progress: 0, message: "" });
     } else {
-      setErrorMessage(`Por favor, selecione apenas arquivos com as extensões permitidas: ${allowedExtensions.join(', ')}`);
+      setErrorMessage(
+        `Por favor, selecione apenas arquivos com as extensões permitidas: ${allowedExtensions.join(
+          ", "
+        )}`
+      );
       setProcessing({
-        status: 'error',
+        status: "error",
         progress: 0,
-        message: 'Tipo de arquivo não suportado'
+        message: "Tipo de arquivo não suportado",
       });
     }
   };
@@ -53,151 +75,171 @@ function App() {
 
   const processFile = async () => {
     if (!file) {
-      setErrorMessage('Por favor, selecione um arquivo');
+      setErrorMessage("Por favor, selecione um arquivo");
       setProcessing({
-        status: 'error',
+        status: "error",
         progress: 0,
-        message: 'Arquivo necessário'
+        message: "Arquivo necessário",
       });
       return;
     }
 
-    setProcessing({ status: 'uploading', progress: 10, message: 'Enviando arquivo...' });
-    setErrorMessage('');
+    setProcessing({
+      status: "uploading",
+      progress: 10,
+      message: "Enviando arquivo...",
+    });
+    setErrorMessage("");
 
     try {
       // Tradução completa do documento (upload, processamento e download)
       const uploadFormData = new FormData();
-      uploadFormData.append('file', file);
-      uploadFormData.append('source_lang', sourceLanguage);
-      uploadFormData.append('target_lang', targetLanguage);
+      uploadFormData.append("file", file);
+      uploadFormData.append("source_lang", sourceLanguage);
+      uploadFormData.append("target_lang", targetLanguage);
 
-      console.log('Iniciando tradução completa...');
-      console.log('Source Language:', sourceLanguage);
-      console.log('Target Language:', targetLanguage);
-      console.log('File:', file.name);
+      console.log("Iniciando tradução completa...");
+      console.log("Source Language:", sourceLanguage);
+      console.log("Target Language:", targetLanguage);
+      console.log("File:", file.name);
 
-      setProcessing({ status: 'processing', progress: 50, message: 'Traduzindo documento...' });
+      setProcessing({
+        status: "processing",
+        progress: 50,
+        message: "Traduzindo documento...",
+      });
 
-      const response = await fetch('http://localhost:3001/api/translate', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3001/api/translate", {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: uploadFormData,
       });
 
-      console.log('Translation response status:', response.status);
+      console.log("Translation response status:", response.status);
 
       if (!response.ok) {
         const responseText = await response.text();
-        console.error('Translation error response:', responseText);
-        
+        console.error("Translation error response:", responseText);
+
         let errorMessage = `Erro na tradução (${response.status})`;
         try {
           const errorData = JSON.parse(responseText);
-          errorMessage = `Erro na tradução: ${errorData.error || errorData.message || response.statusText}`;
+          errorMessage = `Erro na tradução: ${
+            errorData.error || errorData.message || response.statusText
+          }`;
         } catch {
-          errorMessage = `Erro na tradução: ${responseText || response.statusText}`;
+          errorMessage = `Erro na tradução: ${
+            responseText || response.statusText
+          }`;
         }
         throw new Error(errorMessage);
       }
 
-      setProcessing({ status: 'processing', progress: 90, message: 'Finalizando download...' });
+      setProcessing({
+        status: "processing",
+        progress: 90,
+        message: "Finalizando download...",
+      });
 
       // O response contém informações do arquivo traduzido
       const result = await response.json();
-      console.log('Translation completed:', result);
+      console.log("Translation completed:", result);
 
       // Download automático do arquivo em nova aba
       const downloadUrl = `http://localhost:3001${result.downloadUrl}`;
-      window.open(downloadUrl, '_blank');
+      window.open(downloadUrl, "_blank");
 
-      setProcessing({ status: 'completed', progress: 100, message: 'Documento processado com sucesso!' });
-
+      setProcessing({
+        status: "completed",
+        progress: 100,
+        message: "Documento processado com sucesso!",
+      });
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Erro desconhecido';
-      console.error('Processing error:', error);
+      const errorMsg =
+        error instanceof Error ? error.message : "Erro desconhecido";
+      console.error("Processing error:", error);
       setErrorMessage(errorMsg);
       setProcessing({
-        status: 'error',
+        status: "error",
         progress: 0,
-        message: 'Erro no processamento'
+        message: "Erro no processamento",
       });
     }
   };
 
   const languages = [
-    { code: 'AR', name: 'Árabe' },
-    { code: 'BG', name: 'Búlgaro' },
-    { code: 'CS', name: 'Tcheco' },
-    { code: 'DA', name: 'Dinamarquês' },
-    { code: 'DE', name: 'Alemão' },
-    { code: 'EL', name: 'Grego' },
-    { code: 'en-US', name: 'Inglês' },
-    { code: 'ES', name: 'Espanhol' },
-    { code: 'ET', name: 'Estoniano' },
-    { code: 'FI', name: 'Finlandês' },
-    { code: 'FR', name: 'Francês' },
-    { code: 'HE', name: 'Hebraico' },
-    { code: 'HU', name: 'Húngaro' },
-    { code: 'ID', name: 'Indonésio' },
-    { code: 'IT', name: 'Italiano' },
-    { code: 'JA', name: 'Japonês' },
-    { code: 'KO', name: 'Coreano' },
-    { code: 'LT', name: 'Lituano' },
-    { code: 'LV', name: 'Letão' },
-    { code: 'NB', name: 'Norueguês (Bokmål)' },
-    { code: 'NL', name: 'Holandês' },
-    { code: 'PL', name: 'Polonês' },
-    { code: 'PT', name: 'Português' },
-    { code: 'RO', name: 'Romeno' },
-    { code: 'RU', name: 'Russo' },
-    { code: 'SK', name: 'Eslovaco' },
-    { code: 'SL', name: 'Esloveno' },
-    { code: 'SV', name: 'Sueco' },
-    { code: 'TH', name: 'Tailandês' },
-    { code: 'TR', name: 'Turco' },
-    { code: 'UK', name: 'Ucraniano' },
-    { code: 'VI', name: 'Vietnamita' },
-    { code: 'ZH', name: 'Chinês' },
+    { code: "AR", name: "Árabe" },
+    { code: "BG", name: "Búlgaro" },
+    { code: "CS", name: "Tcheco" },
+    { code: "DA", name: "Dinamarquês" },
+    { code: "DE", name: "Alemão" },
+    { code: "EL", name: "Grego" },
+    { code: "en-US", name: "Inglês" },
+    { code: "ES", name: "Espanhol" },
+    { code: "ET", name: "Estoniano" },
+    { code: "FI", name: "Finlandês" },
+    { code: "FR", name: "Francês" },
+    { code: "HE", name: "Hebraico" },
+    { code: "HU", name: "Húngaro" },
+    { code: "ID", name: "Indonésio" },
+    { code: "IT", name: "Italiano" },
+    { code: "JA", name: "Japonês" },
+    { code: "KO", name: "Coreano" },
+    { code: "LT", name: "Lituano" },
+    { code: "LV", name: "Letão" },
+    { code: "NB", name: "Norueguês (Bokmål)" },
+    { code: "NL", name: "Holandês" },
+    { code: "PL", name: "Polonês" },
+    { code: "PT", name: "Português" },
+    { code: "RO", name: "Romeno" },
+    { code: "RU", name: "Russo" },
+    { code: "SK", name: "Eslovaco" },
+    { code: "SL", name: "Esloveno" },
+    { code: "SV", name: "Sueco" },
+    { code: "TH", name: "Tailandês" },
+    { code: "TR", name: "Turco" },
+    { code: "UK", name: "Ucraniano" },
+    { code: "VI", name: "Vietnamita" },
+    { code: "ZH", name: "Chinês" },
   ];
 
   const sourceLanguages = [
-    { code: 'auto', name: 'Detectar automaticamente' },
-    { code: 'AR', name: 'Árabe' },
-    { code: 'BG', name: 'Búlgaro' },
-    { code: 'CS', name: 'Tcheco' },
-    { code: 'DA', name: 'Dinamarquês' },
-    { code: 'DE', name: 'Alemão' },
-    { code: 'EL', name: 'Grego' },
-    { code: 'EN', name: 'Inglês' },
-    { code: 'ES', name: 'Espanhol' },
-    { code: 'ET', name: 'Estoniano' },
-    { code: 'FI', name: 'Finlandês' },
-    { code: 'FR', name: 'Francês' },
-    { code: 'HE', name: 'Hebraico' },
-    { code: 'HU', name: 'Húngaro' },
-    { code: 'ID', name: 'Indonésio' },
-    { code: 'IT', name: 'Italiano' },
-    { code: 'JA', name: 'Japonês' },
-    { code: 'KO', name: 'Coreano' },
-    { code: 'LT', name: 'Lituano' },
-    { code: 'LV', name: 'Letão' },
-    { code: 'NB', name: 'Norueguês (Bokmål)' },
-    { code: 'NL', name: 'Holandês' },
-    { code: 'PL', name: 'Polonês' },
-    { code: 'PT', name: 'Português' },
-    { code: 'RO', name: 'Romeno' },
-    { code: 'RU', name: 'Russo' },
-    { code: 'SK', name: 'Eslovaco' },
-    { code: 'SL', name: 'Esloveno' },
-    { code: 'SV', name: 'Sueco' },
-    { code: 'TH', name: 'Tailandês' },
-    { code: 'TR', name: 'Turco' },
-    { code: 'UK', name: 'Ucraniano' },
-    { code: 'VI', name: 'Vietnamita' },
-    { code: 'ZH', name: 'Chinês' },
+    { code: "auto", name: "Detectar automaticamente" },
+    { code: "AR", name: "Árabe" },
+    { code: "BG", name: "Búlgaro" },
+    { code: "CS", name: "Tcheco" },
+    { code: "DA", name: "Dinamarquês" },
+    { code: "DE", name: "Alemão" },
+    { code: "EL", name: "Grego" },
+    { code: "EN", name: "Inglês" },
+    { code: "ES", name: "Espanhol" },
+    { code: "ET", name: "Estoniano" },
+    { code: "FI", name: "Finlandês" },
+    { code: "FR", name: "Francês" },
+    { code: "HE", name: "Hebraico" },
+    { code: "HU", name: "Húngaro" },
+    { code: "ID", name: "Indonésio" },
+    { code: "IT", name: "Italiano" },
+    { code: "JA", name: "Japonês" },
+    { code: "KO", name: "Coreano" },
+    { code: "LT", name: "Lituano" },
+    { code: "LV", name: "Letão" },
+    { code: "NB", name: "Norueguês (Bokmål)" },
+    { code: "NL", name: "Holandês" },
+    { code: "PL", name: "Polonês" },
+    { code: "PT", name: "Português" },
+    { code: "RO", name: "Romeno" },
+    { code: "RU", name: "Russo" },
+    { code: "SK", name: "Eslovaco" },
+    { code: "SL", name: "Esloveno" },
+    { code: "SV", name: "Sueco" },
+    { code: "TH", name: "Tailandês" },
+    { code: "TR", name: "Turco" },
+    { code: "UK", name: "Ucraniano" },
+    { code: "VI", name: "Vietnamita" },
+    { code: "ZH", name: "Chinês" },
   ];
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -221,12 +263,16 @@ function App() {
           {/* Configuration Card */}
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
             <div className="p-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Configuração</h2>
-              
-              <div className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                Configuração
+              </h2>
+
+              <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="sourceLanguage" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="sourceLanguage"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Idioma de Origem
                   </label>
                   <select
@@ -247,7 +293,10 @@ function App() {
                 </div>
 
                 <div>
-                  <label htmlFor="targetLanguage" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="targetLanguage"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Idioma de Destino
                   </label>
                   <select
@@ -263,7 +312,6 @@ function App() {
                     ))}
                   </select>
                 </div>
-                </div>
               </div>
             </div>
           </div>
@@ -276,16 +324,18 @@ function App() {
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
-                  file 
-                    ? 'border-green-300 bg-green-50' 
-                    : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
+                  file
+                    ? "border-green-300 bg-green-50"
+                    : "border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50"
                 }`}
               >
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept=".docx,.pptx,.xlsx,.pdf,.htm,.html,.txt,.xlf,.xliff,.srt"
-                  onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+                  onChange={(e) =>
+                    e.target.files?.[0] && handleFileSelect(e.target.files[0])
+                  }
                   className="hidden"
                 />
 
@@ -303,7 +353,7 @@ function App() {
                     </div>
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex-1 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                      className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
                     >
                       Selecionar outro arquivo
                     </button>
@@ -316,7 +366,8 @@ function App() {
                         Carregar Documento
                       </h3>
                       <p className="text-gray-600 mb-4">
-                        Arraste e solte seu arquivo aqui ou clique para selecionar
+                        Arraste e solte seu arquivo aqui ou clique para
+                        selecionar
                       </p>
                       <button
                         onClick={() => fileInputRef.current?.click()}
@@ -328,53 +379,97 @@ function App() {
                     <div className="text-sm text-gray-500">
                       <p className="mb-2">Extensões suportadas:</p>
                       <p className="font-mono text-xs">
-                        {allowedExtensions.join(', ')}
+                        {allowedExtensions.join(", ")}
                       </p>
                     </div>
-                    
+
                     {/* File Format Limits Table */}
                     <div className="mt-6 bg-gray-50 rounded-lg p-4">
-                      <h4 className="font-semibold text-gray-900 mb-3">Limites por Formato de Arquivo</h4>
+                      <h4 className="font-semibold text-gray-900 mb-3">
+                        Limites por Formato de Arquivo
+                      </h4>
                       <div className="overflow-x-auto">
                         <table className="w-full text-xs">
                           <thead>
                             <tr className="border-b border-gray-200">
-                              <th className="text-center py-2 font-medium text-gray-700">Formato</th>
-                              <th className="text-center py-2 font-medium text-gray-700">DeepL Suporte</th>
+                              <th className="text-center py-2 font-medium text-gray-700">
+                                Formato
+                              </th>
+                              <th className="text-center py-2 font-medium text-gray-700">
+                                DeepL Suporte
+                              </th>
                             </tr>
                           </thead>
                           <tbody className="text-gray-600">
                             <tr className="border-b border-gray-100">
-                              <td className="py-2 font-mono">Word (.docx / .doc)	</td>
-                              <td className="text-center py-2">30 MB<br/>1M chars</td>
+                              <td className="py-2 font-mono">
+                                Word (.docx / .doc){" "}
+                              </td>
+                              <td className="text-center py-2">
+                                30 MB
+                                <br />
+                                1M chars
+                              </td>
                             </tr>
                             <tr className="border-b border-gray-100">
-                              <td className="py-2 font-mono">PowerPoint (.pptx)	</td>
-                              <td className="text-center py-2">30 MB<br/>1M chars</td>
+                              <td className="py-2 font-mono">
+                                PowerPoint (.pptx){" "}
+                              </td>
+                              <td className="text-center py-2">
+                                30 MB
+                                <br />
+                                1M chars
+                              </td>
                             </tr>
                             <tr className="border-b border-gray-100">
-                              <td className="py-2 font-mono">Excel (.xlsx)	</td>
-                              <td className="text-center py-2">30 MB<br/>1M chars</td>
+                              <td className="py-2 font-mono">Excel (.xlsx) </td>
+                              <td className="text-center py-2">
+                                30 MB
+                                <br />
+                                1M chars
+                              </td>
                             </tr>
                             <tr className="border-b border-gray-100">
-                              <td className="py-2 font-mono">PDF (.pdf)	</td>
-                              <td className="text-center py-2">30 MB<br/>1M chars</td>
+                              <td className="py-2 font-mono">PDF (.pdf) </td>
+                              <td className="text-center py-2">
+                                30 MB
+                                <br />
+                                1M chars
+                              </td>
                             </tr>
                             <tr className="border-b border-gray-100">
                               <td className="py-2 font-mono">Text (.txt)</td>
-                              <td className="text-center py-2">1 MB<br/>1M chars</td>
+                              <td className="text-center py-2">
+                                1 MB
+                                <br />
+                                1M chars
+                              </td>
                             </tr>
                             <tr className="border-b border-gray-100">
                               <td className="py-2 font-mono">HTML (.html)</td>
-                              <td className="text-center py-2">5 MB<br/>1M chars</td>
+                              <td className="text-center py-2">
+                                5 MB
+                                <br />
+                                1M chars
+                              </td>
                             </tr>
                             <tr className="border-b border-gray-100">
-                              <td className="py-2 font-mono">XLIFF (.xlf/.xliff)*</td>
-                              <td className="text-center py-2">10 MB<br/>1M chars</td>
+                              <td className="py-2 font-mono">
+                                XLIFF (.xlf/.xliff)*
+                              </td>
+                              <td className="text-center py-2">
+                                10 MB
+                                <br />
+                                1M chars
+                              </td>
                             </tr>
                             <tr>
-                              <td className="py-2 font-mono">SRT (.srt)	</td>
-                              <td className="text-center py-2">150 KB<br/>1M chars</td>
+                              <td className="py-2 font-mono">SRT (.srt) </td>
+                              <td className="text-center py-2">
+                                150 KB
+                                <br />
+                                1M chars
+                              </td>
                             </tr>
                           </tbody>
                         </table>
@@ -393,7 +488,7 @@ function App() {
               <div className="border-t border-gray-100 p-8">
                 <div className="space-y-6">
                   {/* Progress Bar */}
-                  {processing.status !== 'idle' && (
+                  {processing.status !== "idle" && (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-700">
@@ -406,11 +501,11 @@ function App() {
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                           className={`h-2 rounded-full transition-all duration-500 ${
-                            processing.status === 'error' 
-                              ? 'bg-red-500' 
-                              : processing.status === 'completed'
-                              ? 'bg-green-500'
-                              : 'bg-blue-500'
+                            processing.status === "error"
+                              ? "bg-red-500"
+                              : processing.status === "completed"
+                              ? "bg-green-500"
+                              : "bg-blue-500"
                           }`}
                           style={{ width: `${processing.progress}%` }}
                         />
@@ -420,14 +515,14 @@ function App() {
 
                   {/* Action Buttons */}
                   <div className="flex items-center gap-4">
-                    {processing.status === 'idle' && (
+                    {processing.status === "idle" && (
                       <button
                         onClick={processFile}
                         disabled={!apiKey.trim()}
                         className={`flex-1 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
                           apiKey.trim()
-                            ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            ? "bg-blue-600 hover:bg-blue-700 text-white"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
                         }`}
                       >
                         <FileText className="w-5 h-5" />
@@ -435,7 +530,8 @@ function App() {
                       </button>
                     )}
 
-                    {(processing.status === 'uploading' || processing.status === 'processing') && (
+                    {(processing.status === "uploading" ||
+                      processing.status === "processing") && (
                       <button
                         disabled
                         className="flex-1 bg-blue-400 text-white px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2"
@@ -445,11 +541,15 @@ function App() {
                       </button>
                     )}
 
-                    {processing.status === 'error' && (
+                    {processing.status === "error" && (
                       <button
                         onClick={() => {
-                          setProcessing({ status: 'idle', progress: 0, message: '' });
-                          setErrorMessage('');
+                          setProcessing({
+                            status: "idle",
+                            progress: 0,
+                            message: "",
+                          });
+                          setErrorMessage("");
                         }}
                         className="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                       >
@@ -457,7 +557,6 @@ function App() {
                         Tentar Novamente
                       </button>
                     )}
-
                   </div>
 
                   {/* Error Message */}
@@ -480,7 +579,9 @@ function App() {
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                 <Upload className="w-6 h-6 text-blue-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Processamento Direto</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Processamento Direto
+              </h3>
               <p className="text-gray-600 text-sm">
                 Seus arquivos são processados diretamente via API DeepL
               </p>
@@ -500,7 +601,9 @@ function App() {
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                 <Download className="w-6 h-6 text-purple-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Download Instantâneo</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Download Instantâneo
+              </h3>
               <p className="text-gray-600 text-sm">
                 Baixe seu arquivo traduzido imediatamente
               </p>
