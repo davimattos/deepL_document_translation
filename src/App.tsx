@@ -19,6 +19,7 @@ function App() {
   const [targetLanguage, setTargetLanguage] = useState<string>('en-US');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [apiKey, setApiKey] = useState<string>('');
+  const [apiKey, setApiKey] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const allowedExtensions = ['docx', 'pptx', 'xlsx', 'pdf', 'htm', 'html', 'txt', 'xlf', 'xliff', 'srt'];
@@ -64,6 +65,15 @@ function App() {
       return;
     }
 
+    if (!apiKey.trim()) {
+      setErrorMessage('Por favor, insira sua chave da API DeepL');
+      setProcessing({
+        status: 'error',
+        progress: 0,
+        message: 'API Key necessária'
+      });
+      return;
+    }
     setProcessing({ status: 'uploading', progress: 10, message: 'Enviando arquivo...' });
     setErrorMessage('');
 
@@ -73,6 +83,7 @@ function App() {
       uploadFormData.append('file', file);
       uploadFormData.append('source_lang', sourceLanguage);
       uploadFormData.append('target_lang', targetLanguage);
+      uploadFormData.append('api_key', apiKey);
 
       console.log('Iniciando tradução completa...');
       console.log('Source Language:', sourceLanguage);
@@ -233,7 +244,33 @@ function App() {
             <div className="p-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-6">Configuração</h2>
               
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <div>
+                  <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-2">
+                    Chave da API DeepL
+                  </label>
+                  <input
+                    id="apiKey"
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="Insira sua chave da API DeepL"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Obtenha sua chave gratuita em{' '}
+                    <a 
+                      href="https://www.deepl.com/pro-api" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      deepl.com/pro-api
+                    </a>
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="sourceLanguage" className="block text-sm font-medium text-gray-700 mb-2">
                     Idioma de Origem
@@ -271,6 +308,7 @@ function App() {
                       </option>
                     ))}
                   </select>
+                </div>
                 </div>
               </div>
             </div>
