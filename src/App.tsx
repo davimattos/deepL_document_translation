@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Upload, Download, FileText } from "lucide-react";
 import {
   FileDropzone,

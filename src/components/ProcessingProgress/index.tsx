@@ -24,7 +24,14 @@ export function ProcessingProgress({
                 {processing.progress}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="w-full bg-gray-200 rounded-full h-2"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={processing.progress}
+              aria-label="Progresso de tradução"
+            >
               <div
                 className={`h-2 rounded-full transition-all duration-500 ${
                   processing.status === "error"
