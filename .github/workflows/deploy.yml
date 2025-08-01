@@ -14,9 +14,9 @@ jobs:
       contains(join(github.event.commits.*.message, ' '), '#force') ||
       !contains(join(github.event.commits.*.message, ' '), '#skip') &&
       (
-        exists(github.event.commits..modified) && contains(join(github.event.commits..modified, ' '), 'packages/frontend/') ||
-        exists(github.event.commits..added) && contains(join(github.event.commits..added, ' '), 'packages/frontend/') ||
-        exists(github.event.commits..removed) && contains(join(github.event.commits..removed, ' '), 'packages/frontend/')
+        exists(github.event.commits.*.modified) && contains(join(github.event.commits.*.modified, ' '), 'packages/frontend/') ||
+        exists(github.event.commits.*.added) && contains(join(github.event.commits.*.added, ' '), 'packages/frontend/') ||
+        exists(github.event.commits.*.removed) && contains(join(github.event.commits.*.removed, ' '), 'packages/frontend/')
       )
 
     steps:
@@ -48,9 +48,9 @@ jobs:
       contains(join(github.event.commits.*.message, ' '), '#force') ||
       !contains(join(github.event.commits.*.message, ' '), '#skip') &&
       (
-        exists(github.event.commits..modified) && contains(join(github.event.commits..modified, ' '), 'packages/backend/') ||
-        exists(github.event.commits..added) && contains(join(github.event.commits..added, ' '), 'packages/backend/') ||
-        exists(github.event.commits..removed) && contains(join(github.event.commits..removed, ' '), 'packages/backend/')
+        exists(github.event.commits.*.modified) && contains(join(github.event.commits.*.modified, ' '), 'packages/backend/') ||
+        exists(github.event.commits.*.added) && contains(join(github.event.commits.*.added, ' '), 'packages/backend/') ||
+        exists(github.event.commits.*.removed) && contains(join(github.event.commits.*.removed, ' '), 'packages/backend/')
       )
 
     steps:
