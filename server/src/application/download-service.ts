@@ -1,4 +1,4 @@
-import { LocalStorageRepository } from "../infrastructure/local-storage-repository";
+import { LocalStorageRepository } from "../infrastructure/repositories/local-storage-repository";
 import { Response } from "express";
 
 export class DownloadService {
@@ -12,7 +12,7 @@ export class DownloadService {
       return;
     }
 
-    res.download(filePath, filename, (err) => {
+    res.download(filePath, filename, err => {
       if (err) {
         console.error("Download error:", err);
         if (!res.headersSent) {

@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import multer from 'multer';
-import { IDocumentStorage } from "../domain/document-storage";
+import multer from "multer";
+import { IDocumentStorage } from "../../domain/document-storage";
 
 export class LocalStorageRepository implements IDocumentStorage {
   private downloadsDir = path.resolve("downloads");
@@ -22,7 +22,7 @@ export class LocalStorageRepository implements IDocumentStorage {
   getUploadMiddleware() {
     const storage = multer.diskStorage({
       destination: (_, __, cb) => cb(null, this.uploadsDir),
-      filename: (_, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
+      filename: (_, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
     });
 
     return multer({ storage });

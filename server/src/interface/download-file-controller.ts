@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { LocalStorageRepository } from "../infrastructure/local-storage-repository";
+import { LocalStorageRepository } from "../infrastructure/repositories/local-storage-repository";
 import { DownloadService } from "../application/download-service";
 
 const storage = new LocalStorageRepository();
