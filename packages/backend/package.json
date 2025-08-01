@@ -1,5 +1,5 @@
 {
-  "name": "express-server-ts",
+  "name": "backend",
   "version": "1.0.0",
   "description": "Servidor Node.js com Express, DeepL, CORS, Multer e TypeScript",
   "main": "dist/index.js",
