@@ -43,14 +43,14 @@ jobs:
     needs: deploy-frontend
 
     if: |
-    github.event_name == 'push' &&
-    contains(join(github.event.commits.*.message, ' '), '#force') ||
-    !contains(join(github.event.commits.*.message, ' '), '#skip') &&
-    (
-      join(github.event.commits.*.modified, ' ') != '' && contains(join(github.event.commits.*.modified, ' '), 'packages/backend/') ||
-      join(github.event.commits.*.added, ' ') != '' && contains(join(github.event.commits.*.added, ' '), 'packages/backend/') ||
-      join(github.event.commits.*.removed, ' ') != '' && contains(join(github.event.commits.*.removed, ' '), 'packages/backend/')
-    )
+      github.event_name == 'push' &&
+      contains(join(github.event.commits.*.message, ' '), '#force') ||
+      !contains(join(github.event.commits.*.message, ' '), '#skip') &&
+      (
+        join(github.event.commits.*.modified, ' ') != '' && contains(join(github.event.commits.*.modified, ' '), 'packages/backend/') ||
+        join(github.event.commits.*.added, ' ') != '' && contains(join(github.event.commits.*.added, ' '), 'packages/backend/') ||
+        join(github.event.commits.*.removed, ' ') != '' && contains(join(github.event.commits.*.removed, ' '), 'packages/backend/')
+      )
 
     steps:
       - name: 1. Checkout do código
