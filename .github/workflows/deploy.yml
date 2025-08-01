@@ -1,0 +1,73 @@
+name: Deploy Frontend e Backend
+
+on:
+  push:
+    branches:
+      - main
+      
+jobs:
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' &&
+      contains(join(github.event.commits.*.message, ' '), '#force') ||
+      !contains(join(github.event.commits.*.message, ' '), '#skip') &&
+      (
+        exists(github.event.commits..modified) && contains(join(github.event.commits..modified, ' '), 'packages/frontend/') ||
+        exists(github.event.commits..added) && contains(join(github.event.commits..added, ' '), 'packages/frontend/') ||
+        exists(github.event.commits..removed) && contains(join(github.event.commits..removed, ' '), 'packages/frontend/')
+      )
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' 
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci 
+
+      - name: Build do React App
+        run: npm run build -w @deepL_document_translation/frontend 
+
+      - name: Deploy em um Provedor (Ex: Vercel/Netlify)    
+ 
+        run: |
+          echo "Iniciando deploy do frontend..."        
+
+  
+  
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    needs: deploy-frontend 
+
+    
+    
+    if: |
+      github.event_name == 'push' &&
+      contains(join(github.event.commits.*.message, ' '), '#force') ||
+      !contains(join(github.event.commits.*.message, ' '), '#skip') &&
+      (
+        exists(github.event.commits..modified) && contains(join(github.event.commits..modified, ' '), 'packages/backend/') ||
+        exists(github.event.commits..added) && contains(join(github.event.commits..added, ' '), 'packages/backend/') ||
+        exists(github.event.commits..removed) && contains(join(github.event.commits..removed, ' '), 'packages/backend/')
+      )
+
+    steps:
+      - name: 1. Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 3. Instalar dependências (apenas produção)
+        run: npm ci --omit=dev
