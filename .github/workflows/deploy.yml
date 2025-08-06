@@ -74,3 +74,8 @@ jobs:
 
       - name: 3. Instalar dependências
         run: npm ci --omit=dev
+
+      - name: Build with secret
+        run: npm run build
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
