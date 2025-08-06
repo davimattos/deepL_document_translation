@@ -8,9 +8,8 @@ export function FileDropzone({
   fileInputRef,
   handleFileSelect,
   allowedExtensions,
-  handleExecutedFile
+  handleExecutedFile,
 }: Props) {
-
   return (
     <div className="p-8">
       <div
@@ -26,9 +25,7 @@ export function FileDropzone({
           ref={fileInputRef}
           type="file"
           accept=".docx,.pptx,.xlsx,.pdf,.htm,.html,.txt,.xlf,.xliff,.srt"
-          onChange={(e) =>
-            e.target.files?.[0] && handleFileSelect(e.target.files[0])
-          }
+          onChange={e => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
           className="hidden"
         />
 
@@ -36,13 +33,9 @@ export function FileDropzone({
           <div className="space-y-4">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
             <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Arquivo Selecionado
-              </h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Arquivo Selecionado</h3>
               <p className="text-gray-600 mb-1">{file.name}</p>
-              <p className="text-sm text-gray-500">
-                {(file.size / 1024 / 1024).toFixed(2)} MB
-              </p>
+              <p className="text-sm text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
             <button
               onClick={handleExecutedFile}
@@ -55,9 +48,7 @@ export function FileDropzone({
           <div className="space-y-4">
             <Upload className="w-16 h-16 text-gray-400 mx-auto" />
             <div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Carregar Documento
-              </h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Carregar Documento</h3>
               <p className="text-gray-600 mb-4">
                 Arraste e solte seu arquivo aqui ou clique para selecionar
               </p>
@@ -70,26 +61,18 @@ export function FileDropzone({
             </div>
             <div className="text-sm text-gray-500">
               <p className="mb-2">Extensões suportadas:</p>
-              <p className="font-mono text-xs">
-                {allowedExtensions.join(", ")}
-              </p>
+              <p className="font-mono text-xs">{allowedExtensions.join(", ")}</p>
             </div>
 
             {/* File Format Limits Table */}
             <div className="mt-6 bg-gray-50 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 mb-3">
-                Limites por Formato de Arquivo
-              </h4>
+              <h4 className="font-semibold text-gray-900 mb-3">Limites por Formato de Arquivo</h4>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-center py-2 font-medium text-gray-700">
-                        Formato
-                      </th>
-                      <th className="text-center py-2 font-medium text-gray-700">
-                        DeepL Suporte
-                      </th>
+                      <th className="text-center py-2 font-medium text-gray-700">Formato</th>
+                      <th className="text-center py-2 font-medium text-gray-700">DeepL Suporte</th>
                     </tr>
                   </thead>
                   <tbody className="text-gray-600">
