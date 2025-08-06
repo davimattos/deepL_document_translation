@@ -73,7 +73,7 @@ jobs:
           cache: "npm"
 
       - name: 3. Instalar dependências
-        run: npm ci --omit=dev
+        run: npm ci
 
       - name: Build with secret
         run: npm run build
