@@ -16,11 +16,14 @@ jobs:
     steps:
       - name: 1. Checkout do código
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: 2. Usar 'paths-filter' para detectar mudanças
         uses: dorny/paths-filter@v3
         id: filter
         with:
+          base: ${{ github.event.before }}
           filters: |
             frontend:
               - 'packages/frontend/**'
