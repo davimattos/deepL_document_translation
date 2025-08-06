@@ -1,0 +1,76 @@
+name: Deploy Frontend e Backend
+
+on:
+  push:
+    branches:
+      - github-actions
+
+jobs:
+  changes:
+    name: Detectar Mudanças
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+
+    steps:
+      - name: 1. Checkout do código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: 2. Usar 'paths-filter' para detectar mudanças
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          base: ${{ github.event.before }}
+          filters: |
+            frontend:
+              - 'packages/frontend/**'
+            backend:
+              - 'packages/backend/**'
+
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    needs: changes
+
+    if: needs.changes.outputs.frontend == 'true'
+
+    steps:
+      - name: 1. Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 3. Instalar dependências e Buildar
+        run: |
+          npm ci
+          npm run build --workspace=frontend
+
+      - name: 4. Deploy do Frontend
+        run: echo "Fazendo deploy do frontend..."
+
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    needs: changes
+
+    if: needs.changes.outputs.backend == 'true'
+
+    steps:
+      - name: 1. Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 3. Instalar dependências
+        run: npm ci --omit=dev
