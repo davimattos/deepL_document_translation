@@ -3,7 +3,7 @@ name: Deploy Frontend e Backend
 on:
   push:
     branches:
-      - github-actions
+      - main
 
 jobs:
   changes:
