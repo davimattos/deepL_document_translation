@@ -3,7 +3,7 @@ name: Deploy Frontend e Backend
 on:
   push:
     branches:
-      - github-actions
+      - secret
 
 jobs:
   changes:
@@ -73,4 +73,12 @@ jobs:
           cache: "npm"
 
       - name: 3. Instalar dependências
-        run: npm ci --omit=dev
+        run: npm ci
+
+      - name: Build with secret
+        run: npm run build
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+
+      - name: Verify Secret
+        run: echo ${{ secrets.DEEPL_API_KEY }}
