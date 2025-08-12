@@ -1,15 +1,19 @@
 import { SourceLanguageCode, TargetLanguageCode, Translator } from "deepl-node";
 import fs from "fs";
-import { ITranslatorService } from "../../domain/translator-service";
+import { TranslatorService } from "../../domain/translator-service";
 
-export class DeeplTranslatorAdapter implements ITranslatorService {
+export class DeeplTranslatorAdapter implements TranslatorService {
   private translator: Translator;
 
   constructor(apiKey: string) {
+     if (!apiKey) {
+      throw new Error("A chave da API do DeepL não foi fornecida ao adaptador.");
+    }
+    
     this.translator = new Translator(apiKey);
   }
 
-  async translateDocument(
+  async translate(
     inputPath: string,
     outputPath: string,
     sourceLang: SourceLanguageCode | null,

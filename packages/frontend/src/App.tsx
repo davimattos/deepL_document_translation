@@ -9,6 +9,7 @@ import {
 } from "./components";
 import { languages, sourceLanguages, allowedExtensions } from "./data";
 import { useDocumentTranslation } from "./hooks/useDocumentTranslation";
+import { getDownloadLink } from "./services/getDownloadLink";
 
 export interface ProcessingState {
   status: "idle" | "uploading" | "processing" | "completed" | "error";
@@ -17,7 +18,6 @@ export interface ProcessingState {
 }
 
 function App() {
-  const [apiKey] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sourceLanguage, setSourceLanguage] = useState<string>("auto");
@@ -29,7 +29,24 @@ function App() {
     setProcessing,
     errorMessage,
     setErrorMessage,
-  } = useDocumentTranslation(file, sourceLanguage, targetLanguage, apiKey);
+    downloadInfo
+  } = useDocumentTranslation(file, sourceLanguage, targetLanguage);
+
+  const handleDownloadClick = async () => {
+    if (!downloadInfo) return;
+
+    try {
+      const response = await getDownloadLink(downloadInfo.downloadUrl);
+
+      const blob = new Blob([response.data], { type: response.headers['content-type'] });
+      const url = window.URL.createObjectURL(blob);
+      
+      window.open(url)
+
+    } catch (error) {
+      console.error("Falha no download.", error);
+    }
+  };
 
   const handleFileSelect = (selectedFile: File) => {
     const ext = selectedFile.name.split(".").pop()?.toLowerCase();
@@ -94,10 +111,10 @@ function App() {
               <ProcessingProgress
                 processing={processing}
                 processFile={processFile}
-                apiKey={apiKey}
                 setProcessing={setProcessing}
                 setErrorMessage={setErrorMessage}
                 errorMessage={errorMessage}
+                handleDownloadClick={handleDownloadClick}
               />
             )}
           </div>
