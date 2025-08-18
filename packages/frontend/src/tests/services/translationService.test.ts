@@ -7,7 +7,6 @@ describe("translateDocument", () => {
 
   const fakeSourceLang = "EN";
   const fakeTargetLang = "PT";
-  const fakeApiKey = "fake-api-key";
 
   const fetchMock = vi.fn();
   (globalThis.fetch as typeof fetchMock) = fetchMock;
@@ -33,10 +32,9 @@ describe("translateDocument", () => {
       file: fakeFile,
       sourceLang: fakeSourceLang,
       targetLang: fakeTargetLang,
-      apiKey: fakeApiKey,
     });
 
-    expect(globalThis.fetch).toHaveBeenCalledOnce();
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
     expect(result).toEqual(mockResponseData);
 
     const fetchCall = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
@@ -60,7 +58,6 @@ describe("translateDocument", () => {
         file: fakeFile,
         sourceLang: fakeSourceLang,
         targetLang: fakeTargetLang,
-        apiKey: fakeApiKey,
       })
     ).rejects.toThrow("Token inválido");
   });
@@ -79,7 +76,6 @@ describe("translateDocument", () => {
         file: fakeFile,
         sourceLang: fakeSourceLang,
         targetLang: fakeTargetLang,
-        apiKey: fakeApiKey,
       })
     ).rejects.toThrow("Arquivo inválido");
   });
@@ -97,7 +93,6 @@ describe("translateDocument", () => {
         file: fakeFile,
         sourceLang: fakeSourceLang,
         targetLang: fakeTargetLang,
-        apiKey: fakeApiKey,
       })
     ).rejects.toThrow("Erro inesperado");
   });
@@ -115,7 +110,6 @@ describe("translateDocument", () => {
         file: fakeFile,
         sourceLang: fakeSourceLang,
         targetLang: fakeTargetLang,
-        apiKey: fakeApiKey,
       })
     ).rejects.toThrow("Erro desconhecido");
   });

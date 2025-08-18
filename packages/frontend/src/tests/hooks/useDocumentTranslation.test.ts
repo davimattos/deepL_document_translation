@@ -19,7 +19,7 @@ describe("useDocumentTranslation", () => {
 
   it("should handle missing file", async () => {
     const { result } = renderHook(() =>
-      useDocumentTranslation(null, "EN", "PT", "fake-api-key")
+      useDocumentTranslation(null, "EN", "PT")
     );
 
     await act(async () => {
@@ -41,7 +41,7 @@ describe("useDocumentTranslation", () => {
     });
 
     const { result } = renderHook(() =>
-      useDocumentTranslation(mockFile, "EN", "PT", "fake-api-key")
+      useDocumentTranslation(mockFile, "EN", "PT")
     );
 
     await act(async () => {
@@ -61,7 +61,7 @@ describe("useDocumentTranslation", () => {
     });
 
     const { result } = renderHook(() =>
-      useDocumentTranslation(mockFile, "EN", "PT", "invalid-api-key")
+      useDocumentTranslation(mockFile, "EN", "PT")
     );
 
     await act(async () => {
@@ -79,7 +79,7 @@ describe("useDocumentTranslation", () => {
     });
 
     const { result } = renderHook(() =>
-      useDocumentTranslation(mockFile, "EN", "PT", "fake-api-key")
+      useDocumentTranslation(mockFile, "EN", "PT")
     );
 
     await act(async () => {

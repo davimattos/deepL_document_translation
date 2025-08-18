@@ -8,7 +8,6 @@ export function FileDropzone({
   fileInputRef,
   handleFileSelect,
   allowedExtensions,
-  handleExecutedFile,
 }: Props) {
   return (
     <div className="p-8">
@@ -24,7 +23,7 @@ export function FileDropzone({
         <input
           ref={fileInputRef}
           type="file"
-          accept=".docx,.pptx,.xlsx,.pdf,.htm,.html,.txt,.xlf,.xliff,.srt"
+          accept={allowedExtensions.toString()}
           onChange={e => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
           className="hidden"
         />
@@ -38,7 +37,7 @@ export function FileDropzone({
               <p className="text-sm text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
             <button
-              onClick={handleExecutedFile}
+              onClick={() => fileInputRef.current?.click()}
               className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
             >
               Selecionar outro arquivo
@@ -62,90 +61,6 @@ export function FileDropzone({
             <div className="text-sm text-gray-500">
               <p className="mb-2">Extensões suportadas:</p>
               <p className="font-mono text-xs">{allowedExtensions.join(", ")}</p>
-            </div>
-
-            {/* File Format Limits Table */}
-            <div className="mt-6 bg-gray-50 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 mb-3">Limites por Formato de Arquivo</h4>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-center py-2 font-medium text-gray-700">Formato</th>
-                      <th className="text-center py-2 font-medium text-gray-700">DeepL Suporte</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-gray-600">
-                    <tr className="border-b border-gray-100">
-                      <td className="py-2 font-mono">Word (.docx / .doc) </td>
-                      <td className="text-center py-2">
-                        30 MB
-                        <br />
-                        1M chars
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="py-2 font-mono">PowerPoint (.pptx) </td>
-                      <td className="text-center py-2">
-                        30 MB
-                        <br />
-                        1M chars
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="py-2 font-mono">Excel (.xlsx) </td>
-                      <td className="text-center py-2">
-                        30 MB
-                        <br />
-                        1M chars
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="py-2 font-mono">PDF (.pdf) </td>
-                      <td className="text-center py-2">
-                        30 MB
-                        <br />
-                        1M chars
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="py-2 font-mono">Text (.txt)</td>
-                      <td className="text-center py-2">
-                        1 MB
-                        <br />
-                        1M chars
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="py-2 font-mono">HTML (.html)</td>
-                      <td className="text-center py-2">
-                        5 MB
-                        <br />
-                        1M chars
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-100">
-                      <td className="py-2 font-mono">XLIFF (.xlf/.xliff)*</td>
-                      <td className="text-center py-2">
-                        10 MB
-                        <br />
-                        1M chars
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="py-2 font-mono">SRT (.srt) </td>
-                      <td className="text-center py-2">
-                        150 KB
-                        <br />
-                        1M chars
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-xs text-gray-500 mt-3">
-                * Os limites aplicam-se por documento individual
-              </p>
             </div>
           </div>
         )}

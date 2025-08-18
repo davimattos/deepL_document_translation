@@ -4,6 +4,5 @@ export type Props = {
   file: File | null
   fileInputRef: HTMLInputElement | any
   handleFileSelect: (selectedFile: File) => void
-  handleExecutedFile: () => void
   allowedExtensions: string[]
 }

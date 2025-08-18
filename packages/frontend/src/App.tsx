@@ -17,7 +17,6 @@ export interface ProcessingState {
 }
 
 function App() {
-  const [apiKey] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sourceLanguage, setSourceLanguage] = useState<string>("auto");
@@ -29,7 +28,7 @@ function App() {
     setProcessing,
     errorMessage,
     setErrorMessage,
-  } = useDocumentTranslation(file, sourceLanguage, targetLanguage, apiKey);
+  } = useDocumentTranslation(file, sourceLanguage, targetLanguage);
 
   const handleFileSelect = (selectedFile: File) => {
     const ext = selectedFile.name.split(".").pop()?.toLowerCase();
@@ -62,10 +61,6 @@ function App() {
     e.preventDefault();
   };
 
-  const handleExecutedFile = () => {
-    setFile(null)
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <div className="container mx-auto px-4 py-12">
@@ -86,7 +81,6 @@ function App() {
               file={file}
               fileInputRef={fileInputRef}
               handleFileSelect={handleFileSelect}
-              handleExecutedFile={handleExecutedFile}
               allowedExtensions={allowedExtensions}
             />
 
@@ -94,7 +88,6 @@ function App() {
               <ProcessingProgress
                 processing={processing}
                 processFile={processFile}
-                apiKey={apiKey}
                 setProcessing={setProcessing}
                 setErrorMessage={setErrorMessage}
                 errorMessage={errorMessage}

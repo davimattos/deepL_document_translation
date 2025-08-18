@@ -8,7 +8,6 @@ describe("ProcessingProgress component", () => {
   const mockSetErrorMessage = vi.fn();
 
   const baseProps = {
-    apiKey: "some-api-key",
     processFile: mockProcessFile,
     setProcessing: mockSetProcessing,
     setErrorMessage: mockSetErrorMessage,
@@ -17,33 +16,6 @@ describe("ProcessingProgress component", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("renders translate button enabled when status is idle and apiKey is provided", () => {
-    render(
-      <ProcessingProgress
-        {...baseProps}
-        processing={{ status: "idle", progress: 0, message: "" }}
-      />
-    );
-
-    const button = screen.getByRole("button", { name: /traduzir com deepl/i });
-    expect(button).toBeEnabled();
-    fireEvent.click(button);
-    expect(mockProcessFile).toHaveBeenCalled();
-  });
-
-  it("renders translate button disabled when apiKey is empty", () => {
-    render(
-      <ProcessingProgress
-        {...baseProps}
-        apiKey="   "
-        processing={{ status: "idle", progress: 0, message: "" }}
-      />
-    );
-
-    const button = screen.getByRole("button", { name: /traduzir com deepl/i });
-    expect(button).toBeDisabled();
   });
 
   it("renders error retry button and calls setProcessing and setErrorMessage on click", () => {

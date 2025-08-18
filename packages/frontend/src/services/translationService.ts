@@ -2,7 +2,6 @@ export interface TranslateParams {
   file: File;
   sourceLang: string;
   targetLang: string;
-  apiKey: string;
 }
 
 export interface TranslateResponse {
@@ -13,7 +12,6 @@ export async function translateDocument({
   file,
   sourceLang,
   targetLang,
-  apiKey,
 }: TranslateParams): Promise<TranslateResponse> {
   const formData = new FormData();
   formData.append("file", file);
@@ -22,9 +20,6 @@ export async function translateDocument({
 
   const response = await fetch("http://localhost:3001/api/translate", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-    },
     body: formData,
   });
 

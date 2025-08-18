@@ -5,7 +5,6 @@ import { Props } from "./types";
 export function ProcessingProgress({
   processing,
   processFile,
-  apiKey,
   setProcessing,
   setErrorMessage,
   errorMessage,
@@ -51,12 +50,7 @@ export function ProcessingProgress({
           {processing.status === "idle" && (
             <button
               onClick={processFile}
-              disabled={!apiKey.trim()}
-              className={`flex-1 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
-                apiKey.trim()
-                  ? "bg-blue-600 hover:bg-blue-700 text-white"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
+              className={"flex-1 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"}
             >
               <FileText className="w-5 h-5" />
               Traduzir com DeepL

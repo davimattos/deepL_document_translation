@@ -7,7 +7,7 @@ export type ProcessingState =
   | { status: "completed"; progress: 100; message: string }
   | { status: "error"; progress: 0; message: string };
 
-export function useDocumentTranslation(file: File | null, sourceLang: string, targetLang: string, apiKey: string) {
+export function useDocumentTranslation(file: File | null, sourceLang: string, targetLang: string) {
   const [processing, setProcessing] = useState<ProcessingState>({
     status: "idle",
     progress: 0,
@@ -45,7 +45,6 @@ export function useDocumentTranslation(file: File | null, sourceLang: string, ta
         file,
         sourceLang,
         targetLang,
-        apiKey,
       });
 
       setProcessing({
@@ -54,13 +53,13 @@ export function useDocumentTranslation(file: File | null, sourceLang: string, ta
         message: "Finalizando download...",
       });
 
-      window.open(`http://localhost:3001${result.downloadUrl}`, "_blank");
-
       setProcessing({
         status: "completed",
         progress: 100,
         message: "Documento processado com sucesso!",
       });
+
+      window.open(`http://localhost:3001${result.downloadUrl}`, "_blank");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro desconhecido";
       setErrorMessage(msg);
