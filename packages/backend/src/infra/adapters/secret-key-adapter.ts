@@ -1,4 +1,4 @@
-export class SecretKeyManager {
+export class SecretKeyAdapter {
   static get(): string {
     const apiKey = process.env.DEEPL_API_KEY;
 

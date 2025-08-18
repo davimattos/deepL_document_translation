@@ -6,4 +6,5 @@ export type Props = {
   setProcessing: (value: any) => void;
   setErrorMessage: (value: string) => void;
   errorMessage: string;
+  handleDownloadClick: () => void;
 };

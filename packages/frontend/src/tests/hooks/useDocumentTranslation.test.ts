@@ -2,7 +2,7 @@ import { renderHook, act } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { useDocumentTranslation } from "../../hooks/useDocumentTranslation";
-import { TranslateResponse } from "../../services/translationService";
+import { TranslateResponse } from "../../services/uploadAndStartTranslation";
 
 
 const mockFile = new File(["dummy content"], "test.pdf", { type: "application/pdf" });

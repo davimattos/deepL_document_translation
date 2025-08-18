@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { translateDocument } from "../services/translationService";
+import { uploadAndStartTranslation, TranslateResponse } from "../services/uploadAndStartTranslation";
 
 export type ProcessingState =
   | { status: "idle"; progress: 0; message: "" }
@@ -13,6 +13,8 @@ export function useDocumentTranslation(file: File | null, sourceLang: string, ta
     progress: 0,
     message: "",
   });
+  const [downloadInfo, setDownloadInfo] = useState<TranslateResponse | null>(null);
+
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const processFile = async () => {
@@ -27,13 +29,14 @@ export function useDocumentTranslation(file: File | null, sourceLang: string, ta
     }
 
     try {
+      setDownloadInfo(null);
+      setErrorMessage("");
+
       setProcessing({
         status: "uploading",
         progress: 10,
         message: "Enviando arquivo...",
       });
-
-      setErrorMessage("");
 
       setProcessing({
         status: "processing",
@@ -41,17 +44,13 @@ export function useDocumentTranslation(file: File | null, sourceLang: string, ta
         message: "Traduzindo documento...",
       });
 
-      const result = await translateDocument({
+      const result = await uploadAndStartTranslation({
         file,
         sourceLang,
         targetLang,
       });
 
-      setProcessing({
-        status: "processing",
-        progress: 90,
-        message: "Finalizando download...",
-      });
+      setDownloadInfo(result)
 
       setProcessing({
         status: "completed",
@@ -77,5 +76,6 @@ export function useDocumentTranslation(file: File | null, sourceLang: string, ta
     processFile,
     setErrorMessage,
     setProcessing,
+    downloadInfo
   };
 }

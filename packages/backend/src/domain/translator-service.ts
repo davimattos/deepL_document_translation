@@ -1,5 +1,5 @@
-export interface ITranslatorService {
-  translateDocument(
+export interface TranslatorService {
+  translate(
     inputPath: string,
     outputPath: string,
     sourceLang: string | null,

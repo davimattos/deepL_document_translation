@@ -9,6 +9,7 @@ import {
 } from "./components";
 import { languages, sourceLanguages, allowedExtensions } from "./data";
 import { useDocumentTranslation } from "./hooks/useDocumentTranslation";
+import { getDownloadLink } from "./services/getDownloadLink";
 
 export interface ProcessingState {
   status: "idle" | "uploading" | "processing" | "completed" | "error";
@@ -28,7 +29,24 @@ function App() {
     setProcessing,
     errorMessage,
     setErrorMessage,
+    downloadInfo
   } = useDocumentTranslation(file, sourceLanguage, targetLanguage);
+
+  const handleDownloadClick = async () => {
+    if (!downloadInfo) return;
+
+    try {
+      const response = await getDownloadLink(downloadInfo.downloadUrl);
+
+      const blob = new Blob([response.data], { type: response.headers['content-type'] });
+      const url = window.URL.createObjectURL(blob);
+      
+      window.open(url)
+
+    } catch (error) {
+      console.error("Falha no download.", error);
+    }
+  };
 
   const handleFileSelect = (selectedFile: File) => {
     const ext = selectedFile.name.split(".").pop()?.toLowerCase();
@@ -91,6 +109,7 @@ function App() {
                 setProcessing={setProcessing}
                 setErrorMessage={setErrorMessage}
                 errorMessage={errorMessage}
+                handleDownloadClick={handleDownloadClick}
               />
             )}
           </div>

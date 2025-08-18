@@ -1,4 +1,4 @@
-import { translateDocument } from "../../services/translationService"; // ajuste esse path conforme necessário
+import { translateDocument } from "../../services/uploadAndStartTranslation"; // ajuste esse path conforme necessário
     
 describe("translateDocument", () => {
   const fakeFile = new File(["file content"], "test.docx", {
