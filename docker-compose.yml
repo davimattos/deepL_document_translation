@@ -1,19 +1,17 @@
 services:
-
-  # Serviço do Google Cloud Storage Emulator
   gcs-emulator:
     image: fsouza/fake-gcs-server:latest
     container_name: local-gcs
     ports:
       - "4443:4443"
+    volumes:
+      - ./.local-storage:/data
     command:
       - -scheme
       - http
-      - -host
-      - 0.0.0.0
-      - -port
-      - "4443"
       - -data
       - /data
-    volumes:
-      - /Users/davimattos/deepL_document_translation/.local-storage:/data
+    restart: unless-stopped
+
+volumes:
+  gcs_data:
